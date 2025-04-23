@@ -1,0 +1,1 @@
+package org.cxk.domain.AILearningAssistance.service;
