@@ -43,7 +43,7 @@
     </dependencies>
 
     <build>
-        <finalName>CogniLearn-Hub-trigger</finalName>
+        <finalName>cognilearn-hub-trigger</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

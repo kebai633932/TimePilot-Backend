@@ -46,7 +46,7 @@
     </dependencies>
 
     <build>
-        <finalName>CogniLearn-Hub-domain</finalName>
+        <finalName>cognilearn-hub-domain</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
