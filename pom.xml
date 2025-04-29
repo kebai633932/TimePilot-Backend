@@ -119,27 +119,27 @@
             <!-- 工程模块 -->
             <dependency>
                 <groupId>org.cxk</groupId>
-                <artifactId>CogniLearn-Hub-api</artifactId>
+                <artifactId>cognilearn-hub-api</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.cxk</groupId>
-                <artifactId>CogniLearn-Hub-domain</artifactId>
+                <artifactId>cognilearn-hub-domain</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.cxk</groupId>
-                <artifactId>CogniLearn-Hub-infrastructure</artifactId>
+                <artifactId>cognilearn-hub-infrastructure</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.cxk</groupId>
-                <artifactId>CogniLearn-Hub-types</artifactId>
+                <artifactId>cognilearn-hub-types</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.cxk</groupId>
-                <artifactId>CogniLearn-Hub-trigger</artifactId>
+                <artifactId>cognilearn-hub-trigger</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
         </dependencies>
