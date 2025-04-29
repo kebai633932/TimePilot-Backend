@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.cxk</groupId>
-        <artifactId>CogniLearn-Hub</artifactId>
+        <artifactId>cognilearn-hub</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>CogniLearn-Hub-domain</artifactId>
+    <artifactId>cognilearn-hub-domain</artifactId>
 
     <dependencies>
         <dependency>
@@ -41,7 +41,7 @@
         <!-- 系统模块 -->
         <dependency>
             <groupId>org.cxk</groupId>
-            <artifactId>CogniLearn-Hub-types</artifactId>
+            <artifactId>cognilearn-hub-types</artifactId>
         </dependency>
     </dependencies>
 

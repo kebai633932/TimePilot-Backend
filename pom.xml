@@ -3,17 +3,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.cxk</groupId>
-    <artifactId>CogniLearn-Hub</artifactId>
+    <artifactId>cognilearn-hub</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
-        <module>CogniLearn-Hub-api</module>
-        <module>CogniLearn-Hub-app</module>
-        <module>CogniLearn-Hub-domain</module>
-        <module>CogniLearn-Hub-trigger</module>
-        <module>CogniLearn-Hub-infrastructure</module>
-        <module>CogniLearn-Hub-types</module>
+        <module>cognilearn-hub-api</module>
+        <module>cognilearn-hub-app</module>
+        <module>cognilearn-hub-domain</module>
+        <module>cognilearn-hub-trigger</module>
+        <module>cognilearn-hub-infrastructure</module>
+        <module>cognilearn-hub-types</module>
     </modules>
 
     <repositories>
