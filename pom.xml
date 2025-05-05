@@ -8,12 +8,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>cognilearn-hub-api</module>
-        <module>cognilearn-hub-app</module>
-        <module>cognilearn-hub-domain</module>
-        <module>cognilearn-hub-trigger</module>
-        <module>cognilearn-hub-infrastructure</module>
-        <module>cognilearn-hub-types</module>
+        <module>cognilearn-hub-ai-learn-ssist</module>
+        <module>cognilearn-hub-learn-time-plan</module>
+        <module>cognilearn-hub-note-manage</module>
+        <module>cognilearn-hub-study-web-agg</module>
+        <module>cognilearn-hub-user-auth</module>
+        <module>cognilearn-hub-user-info</module>
     </modules>
 
     <repositories>
@@ -116,32 +116,7 @@
                 <version>1.15</version>
             </dependency>
 
-            <!-- 工程模块 -->
-            <dependency>
-                <groupId>org.cxk</groupId>
-                <artifactId>cognilearn-hub-api</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.cxk</groupId>
-                <artifactId>cognilearn-hub-domain</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.cxk</groupId>
-                <artifactId>cognilearn-hub-infrastructure</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.cxk</groupId>
-                <artifactId>cognilearn-hub-types</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.cxk</groupId>
-                <artifactId>cognilearn-hub-trigger</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
