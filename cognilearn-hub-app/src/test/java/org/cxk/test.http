@@ -1,0 +1,10 @@
+# curl "http://localhost:9999/tinyid/id/nextId?bizType=test&token=0f673adf80504e2eaa552f5d791b644c&batchSize=3"
+# curl "http://localhost:9999/tinyid/id/nextId?bizType=auth_register&token=bc14aa9d-2c0e-41f3-8141-1ad5faa49730"
+GET http://localhost:9999/tinyid/id/nextId?bizType=auth_register&token=bc14aa9d-2c0e-41f3-8141-1ad5faa49730
+
+###
+
+
+
+###
+
