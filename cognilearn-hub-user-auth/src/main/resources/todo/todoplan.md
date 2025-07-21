@@ -1,4 +1,6 @@
-认证授权模块  （spring security）
+认证授权模块  （spring security，，Spring Cloud Gateway，OpenFeign）
+
+OAuth2
 
 2.用户登录jwt（）
 

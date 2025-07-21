@@ -10,14 +10,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>cognilearn-hub-ai-learn-ssist</module>
         <module>cognilearn-hub-learn-time-plan</module>
         <module>cognilearn-hub-note-manage</module>
-        <module>cognilearn-hub-study-web-agg</module>
         <module>cognilearn-hub-user-auth</module>
-        <module>cognilearn-hub-user-info</module>
         <module>cognilearn-hub-app</module>
         <module>cognilearn-hub-types</module>
+        <module>cognilearn-hub-app</module>
     </modules>
 
     <repositories>
