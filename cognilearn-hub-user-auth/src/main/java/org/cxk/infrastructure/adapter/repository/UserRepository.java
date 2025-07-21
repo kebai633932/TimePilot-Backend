@@ -5,6 +5,7 @@ import org.cxk.infrastructure.adapter.dao.IUserDao;
 import org.cxk.infrastructure.adapter.dao.converter.UserConverter;
 import org.cxk.infrastructure.adapter.dao.po.User;
 import org.cxk.model.entity.UserEntity;
+import org.cxk.service.repository.IUserRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
  */
 @Repository
 @AllArgsConstructor
-public class UserRepository {
+public class UserRepository implements IUserRepository {
     private final IUserDao userDao;
 
     public boolean save(UserEntity userEntity) {
@@ -30,5 +31,9 @@ public class UserRepository {
 
     public List<User> findAll() {
         return userDao.findAll();
+    }
+
+    public boolean deleteByUsername(String username) {
+        return userDao.deleteByUsername(username);
     }
 }

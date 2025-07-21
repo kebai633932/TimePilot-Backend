@@ -17,7 +17,6 @@ HTTPS = HTTP + SSL（Secure Sockets Layer）/TLS（Transport Layer Security）
 
 项目用测试驱动开发与领域驱动开发和CI/CD，首先从master分支开分支到feature分支，在对应领域先写单元测试类（覆盖正常使用场景、边界条件以及异常情况），然后做功能开发，功能开发完成，在测试分支做模块间集成测试,与外部系统集成测试，基本安全漏洞检查，在uat分支类生产环境做集成与测压（省略），最后合并到master分支，用Jenkins做构建部署。
 
-
 1. **产品诉求分析**：梳理复杂的营销抽奖场景玩法需求，涵盖活动配置、签到奖励、抽奖策略（责任链 + 规则树）、库存扣减、阶梯抽奖等，强调了整体概率计算方式、抽奖次数来源、签到发放抽奖次数、库存管理、抽奖规则解锁、抽奖记录与奖品对接、特殊用户（黑名单）处理等方面。
 2. **绘制用例图**：用例图是用户与系统交互的最简表示形式，等同用户故事，以日常语言描述系统功能需求，从客户或使用者角度出发，反应工作职责、范围和任务等，为系统搭建蓝图。
 3. **寻找领域事件**：通过产品、测试、架构师等人员一起头脑风暴，挖掘领域事件，可采用便签纸贴黑板穷举的方式，尽量覆盖所有可能的场景和事件。
@@ -34,7 +33,13 @@ HTTPS = HTTP + SSL（Secure Sockets Layer）/TLS（Transport Layer Security）
 
 ## 实现计划:
 
-5.5-5.11 实现时间表  前后端   cognilearn-hub-learn-time-plan[](https://)
+最重要：
+
+**MVP（Minimum Viable Product，最小可行产品）**  **“先跑起来，再优化”**
+
+
+
+cognilearn-hub-learn-time-plan[](https://)
 
 cognilearn-hub-ai-learn-ssist[](https://)
 

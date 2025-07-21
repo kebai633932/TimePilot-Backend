@@ -27,6 +27,7 @@ public class UserEntity {
     private Boolean isDeleted;
     private Date lastLoginTime;
     private Set<RoleEntity> roles;
+    private Long delVersion;
 
     // 构造函数、getter/setter、equals/hashCode
 }

@@ -3,6 +3,7 @@ package org.cxk;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cxk.infrastructure.adapter.repository.UserRepository;
 import org.cxk.service.impl.UserAuthServiceImpl;
+import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
 import org.cxk.trigger.http.UserAuthController;
@@ -57,8 +58,8 @@ public class UserAuthControllerTest {
     public void testRegisterSuccess() throws Exception {
         //1.构造请求参数
         UserRegisterDTO registerDTO = new UserRegisterDTO();
-        registerDTO.setUsername("test");
-        registerDTO.setPassword("test123456");
+        registerDTO.setUsername("CrazyXiaoKe");
+        registerDTO.setPassword("CrazyXiaoKe@13326932249");
 
         // 模拟 userAuthService.register() 正常执行（不抛异常），@MockBean
 //        Mockito.doNothing().when(userAuthService).register(Mockito.any(UserRegisterDTO.class));
@@ -87,11 +88,40 @@ public class UserAuthControllerTest {
 
     @Test
     @WithMockUser // 模拟一个已认证用户，避免 401
+    //注册失败，用户名不规范
+    public void testRegisterFail() throws Exception {
+        //1.构造请求参数
+        UserRegisterDTO registerDTO = new UserRegisterDTO();
+        registerDTO.setUsername("CrazyXiaoKe");
+        registerDTO.setPassword("CrazyXiaoKe");
+
+        // 模拟 userAuthService.register() 正常执行（不抛异常），@MockBean
+//        Mockito.doNothing().when(userAuthService).register(Mockito.any(UserRegisterDTO.class));
+
+        //2.使用 Jackson 的 ObjectMapper 将 registerDTO 对象序列化成 JSON 字符串
+        String json = new ObjectMapper().writeValueAsString(registerDTO);
+
+        //3.使用 MockMvc 模拟发起一个 POST 请求到 "/api/auth/register" 接口
+        // 设置请求类型为 application/json，并携带前面构造的 JSON 请求体
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/auth/register")
+                        .with(csrf()) // ✅ 加上这句,在测试中添加 CSRF token
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                // 期望返回状态码为 200（即 HTTP OK）
+                .andExpect(status().isOk())
+                // 期望响应体中 JSON 的 message 字段为 "注册成功"
+                .andExpect(jsonPath("$.info").value("调用成功"))
+                // 期望响应体中 JSON 的 code 字段为 200（自定义业务成功码）
+                .andExpect(jsonPath("$.code").value("0000"));
+    }
+
+    @Test
+    @WithMockUser // 模拟一个已认证用户，避免 401
     public void testLoginSuccess() throws Exception {
         //1.构造请求参数
         UserLoginDTO userLoginDTO = new UserLoginDTO();
-        userLoginDTO.setUsername("test");
-        userLoginDTO.setPassword("test@test");
+        userLoginDTO.setUsername("test123");
+        userLoginDTO.setPassword("test123");
 //        registerDTO.setUsername("test");
 //        registerDTO.setPassword("test123456");
 
@@ -114,5 +144,42 @@ public class UserAuthControllerTest {
                 // 期望响应体中 JSON 的 code 字段为 200（自定义业务成功码）
                 .andExpect(jsonPath("$.code").value("0000"));
     }
+
+    @Test
+    @WithMockUser
+    public void testDeleteUserSuccess() throws Exception {
+        // 准备阶段：先注册一个用户
+        String username = "delete_test_user";
+
+        UserRegisterDTO registerDTO = new UserRegisterDTO();
+        registerDTO.setUsername(username);
+        registerDTO.setPassword("password123");
+
+        // 注册用户
+        String json = new ObjectMapper().writeValueAsString(registerDTO);
+        mockMvc.perform(post("/api/user/auth/register")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("0000"));
+
+        // 删除用户
+        UserDeleteDTO deleteDTO=new UserDeleteDTO();
+        deleteDTO.setUsername(username);
+        String jsonDelete = new ObjectMapper().writeValueAsString(deleteDTO);
+        mockMvc.perform(post("/api/user/auth/delete")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDelete))
+                // 期望返回状态码为 200（即 HTTP OK）
+                .andExpect(status().isOk())
+                // 期望响应体中 JSON 的 message 字段为 "注册成功"
+                .andExpect(jsonPath("$.info").value("调用成功"))
+                // 期望响应体中 JSON 的 code 字段为 200（自定义业务成功码）
+                .andExpect(jsonPath("$.code").value("0000"));
+
+    }
+
 }
 

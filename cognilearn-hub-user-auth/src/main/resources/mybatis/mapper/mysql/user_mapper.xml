@@ -6,19 +6,19 @@
     <resultMap id="userMap" type="org.cxk.infrastructure.adapter.dao.po.User">
         <id column="id" property="id"/>
         <result column="username" property="username"/>
-        <result column="real_name" property="realName"/>
         <result column="password" property="password"/>
         <result column="email" property="email"/>
         <result column="phone" property="phone"/>
         <result column="is_deleted" property="isDeleted"/>
         <result column="last_login_time" property="lastLoginTime"/>
+        <result column="del_version" property="delVersion"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
-    <insert id="insert" parameterType="org.cxk.infrastructure.adapter.dao.po.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user (id, username, real_name, password, email, phone, is_deleted, last_login_time, create_time, update_time)
-        VALUES (#{id}, #{username}, #{realName}, #{password}, #{email}, #{phone}, #{isDeleted}, #{lastLoginTime}, #{createTime}, #{updateTime})
+    <insert id="insert" parameterType="org.cxk.infrastructure.adapter.dao.po.User">
+        INSERT INTO user (id, username,  password, email, phone, is_deleted, last_login_time,del_version, create_time, update_time)
+        VALUES (#{id}, #{username}, #{password}, #{email}, #{phone}, #{isDeleted}, #{lastLoginTime},#{delVersion}, #{createTime}, #{updateTime})
     </insert>
 
     <select id="findByUsername" parameterType="java.lang.String" resultMap="userMap">
@@ -28,5 +28,15 @@
     <select id="findAll" resultMap="userMap">
         SELECT * FROM user WHERE is_deleted = false
     </select>
+
+    <update id="deleteByUsername" parameterType="java.lang.String">
+        UPDATE user
+        SET
+        is_deleted = 1,
+        del_version = id,  <!-- 直接将主键id赋值给del_version -->
+        update_time = NOW()
+        WHERE username = #{username} AND is_deleted = 0
+    </update>
+
 
 </mapper>

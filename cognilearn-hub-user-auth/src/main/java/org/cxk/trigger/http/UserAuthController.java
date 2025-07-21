@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.service.IUserAuthService;
+import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ import types.response.Response;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/user/auth")
+@RequestMapping("/api/user")
 @AllArgsConstructor
 public class UserAuthController {
 
@@ -57,5 +58,20 @@ public class UserAuthController {
         }
     }
 
+    @PostMapping("/delete")
+    public Response<Boolean> delete(@RequestBody UserDeleteDTO dto) {
+        try {
+            boolean success = userAuthService.delete(dto);
+            return success
+                    ? Response.success(true)
+                    : Response.error(ResponseCode.UN_ERROR);
+        } catch (Exception e) {
+            log.error("删除失败，参数：{}", dto.getUsername(), e);
+            return Response.<Boolean>builder()
+                    .code(ResponseCode.UN_ERROR.getCode())
+                    .info("删除出现异常：" + e.getMessage())
+                    .build();
+        }
+    }
 
 }

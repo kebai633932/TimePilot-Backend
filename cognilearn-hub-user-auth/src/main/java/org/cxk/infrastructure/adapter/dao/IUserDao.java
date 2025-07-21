@@ -12,10 +12,13 @@ import java.util.List;
  */
 @Mapper
 public interface IUserDao {
+    ////todo 用mybatis-plus 的BaseMapper<?> 简化写代码
     boolean insert(User user);
 
     User findByUsername(String username);
 
     List<User> findAll();
+
+    boolean deleteByUsername(String username);
 
 }

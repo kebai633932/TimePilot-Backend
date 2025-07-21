@@ -25,7 +25,7 @@ public class Response<T> implements Serializable {
     // types/response/Response.java
 
 
-    //加静态工厂方法   //todo 看懂
+    //静态工厂方法
     public static <T> Response<T> success(T data) {
             return Response.<T>builder()
                     .code(ResponseCode.SUCCESS.getCode())

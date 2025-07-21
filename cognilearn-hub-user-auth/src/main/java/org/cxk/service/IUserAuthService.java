@@ -1,5 +1,6 @@
 package org.cxk.service;
 
+import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
 
@@ -11,4 +12,5 @@ import org.cxk.trigger.dto.UserRegisterDTO;
 public interface IUserAuthService {
     boolean register(UserRegisterDTO userRegisterDTO);
     boolean login(UserLoginDTO userLoginDTO);
+    boolean delete(UserDeleteDTO userDeleteDTO);
 }

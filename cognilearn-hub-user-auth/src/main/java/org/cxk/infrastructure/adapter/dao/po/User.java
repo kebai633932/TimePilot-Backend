@@ -14,13 +14,12 @@ import java.util.Set;
 public class User {
     private Long id;
     private String username;
-    private String realName;
     private String password;
     private String email;
     private String phone;
     private Boolean isDeleted;
     private Date lastLoginTime;
-    private Set<Role> roles;//todo  建议角色延迟加载或另建表
+    private Long delVersion;
     /** 创建时间 */
     private Date createTime;
     /** 更新时间 */

@@ -52,11 +52,12 @@ mybatis:
   mapper-locations: classpath:/mybatis/mapper/mysql/*.xml
   config-location:  classpath:/mybatis/config/mybatis-config.xml
 
+
 # Redis
 redis:
   sdk:
     config:
-      host: redis
+      host: 127.0.0.1
       port: 6379
       pool-size: 10
       min-idle-size: 5
@@ -66,6 +67,7 @@ redis:
       retry-interval: 1000
       ping-interval: 60000
       keep-alive: true
+
 # 日志
 logging:
   level:
