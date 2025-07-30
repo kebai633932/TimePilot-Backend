@@ -1,6 +1,7 @@
 package org.cxk.infrastructure.adapter.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.AllArgsConstructor;
 import org.cxk.infrastructure.adapter.dao.IUserDao;
 import org.cxk.infrastructure.adapter.dao.converter.UserConverter;
@@ -10,6 +11,7 @@ import org.cxk.service.repository.IUserRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author KJH
@@ -24,6 +26,11 @@ public class UserRepository implements IUserRepository {
     public boolean save(UserEntity userEntity) {
         User user = UserConverter.toPO(userEntity);
         return userDao.insert(user)>0;
+    }
+    public List<String> getAllUsernames() {
+        return userDao.selectList(
+                new LambdaQueryWrapper<User>().select(User::getUsername)
+        ).stream().map(User::getUsername).collect(Collectors.toList());
     }
 
     public User findByUsername(String username) {

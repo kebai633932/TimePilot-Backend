@@ -65,7 +65,7 @@ public class SecurityConfig {
     public JwtLoginFilter jwtLoginFilter(AuthenticationManager authenticationManager) {
         JwtLoginFilter filter = new JwtLoginFilter(authenticationManager);
         filter.setAuthenticationManager(authenticationManager);
-        filter.setJwtUtil(jwtUtil); // 注入 JwtUtil
+//        filter.setJwtUtil(jwtUtil); // 注入 JwtUtil
         filter.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/user/auth/login", "POST"));
         return filter;
     }
@@ -84,6 +84,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .antMatchers(
                         "/api/user/auth/login",
+                        "/api/user/auth/register",
                         "/api/user/auth/refresh-token",
                         "/api/public/**"
                 ).permitAll()

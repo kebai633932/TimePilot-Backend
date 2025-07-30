@@ -32,7 +32,7 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
     private IRoleRepository roleRepository;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
+        //todo 如果后续登录请求非常频繁，添加redis做缓存
         User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new UsernameNotFoundException("用户不存在: " + username);

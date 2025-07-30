@@ -16,7 +16,7 @@ public interface IUserRepository {
     public boolean save(UserEntity userEntity);
 
     public User findByUsername(String username);
-
+    public List<String> getAllUsernames();
     public List<User> findAll();
     public boolean deleteByUsername(String username);
 }

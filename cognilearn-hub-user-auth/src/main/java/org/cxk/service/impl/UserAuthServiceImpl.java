@@ -7,17 +7,14 @@ import org.cxk.model.entity.UserEntity;
 import org.cxk.service.IUserAuthService;
 import org.cxk.service.repository.IUserRepository;
 import org.cxk.trigger.dto.UserDeleteDTO;
-import org.cxk.trigger.dto.UserLoginDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.context.annotation.Bean;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
