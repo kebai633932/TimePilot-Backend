@@ -7,6 +7,9 @@ import org.cxk.service.IUserAuthService;
 import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
+import org.cxk.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 import types.enums.ResponseCode;
 import types.response.Response;
@@ -17,14 +20,19 @@ import types.response.Response;
  * @description
  * @create 2025/5/24 15:27
  */
+//todo
 @Slf4j
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/user/auth")
 @AllArgsConstructor
 public class UserAuthController {
 
     private final IUserAuthService userAuthService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public Response<Boolean> register(@RequestBody UserRegisterDTO dto) {
@@ -42,21 +50,6 @@ public class UserAuthController {
         }
     }
 
-    @PostMapping("/login")
-    public Response<Boolean> login(@RequestBody UserLoginDTO dto) {
-        try {
-            boolean success = userAuthService.login(dto);
-            return success
-                    ? Response.success(true)
-                    : Response.error(ResponseCode.UN_ERROR);
-        } catch (Exception e) {
-            log.error("登录失败，参数：{}", dto, e);
-            return Response.<Boolean>builder()
-                    .code(ResponseCode.UN_ERROR.getCode())
-                    .info("登录出现异常：" + e.getMessage())
-                    .build();
-        }
-    }
 
     @PostMapping("/delete")
     public Response<Boolean> delete(@RequestBody UserDeleteDTO dto) {

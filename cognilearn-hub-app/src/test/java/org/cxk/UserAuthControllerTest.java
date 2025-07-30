@@ -1,36 +1,28 @@
 package org.cxk;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cxk.infrastructure.adapter.dao.po.User;
 import org.cxk.infrastructure.adapter.repository.UserRepository;
 import org.cxk.service.impl.UserAuthServiceImpl;
 import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
-import org.cxk.trigger.http.UserAuthController;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import org.cxk.infrastructure.adapter.dao.po.User;
-import org.junit.jupiter.api.Test;
-import org.springframework.transaction.annotation.Transactional;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 //@WebMvcTest(UserAuthController.class)
 //只加载和 Web 层相关的 Bean，如：
 //你的 UserAuthController
@@ -69,7 +61,7 @@ public class UserAuthControllerTest {
 
         //3.使用 MockMvc 模拟发起一个 POST 请求到 "/api/auth/register" 接口
         // 设置请求类型为 application/json，并携带前面构造的 JSON 请求体
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/auth/register")
+        mockMvc.perform(post("/api/user/auth/register")
                         .with(csrf()) // ✅ 加上这句,在测试中添加 CSRF token
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -103,16 +95,16 @@ public class UserAuthControllerTest {
 
         //3.使用 MockMvc 模拟发起一个 POST 请求到 "/api/auth/register" 接口
         // 设置请求类型为 application/json，并携带前面构造的 JSON 请求体
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/auth/register")
+        mockMvc.perform(post("/api/user/auth/register")
                         .with(csrf()) // ✅ 加上这句,在测试中添加 CSRF token
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 // 期望返回状态码为 200（即 HTTP OK）
                 .andExpect(status().isOk())
                 // 期望响应体中 JSON 的 message 字段为 "注册成功"
-                .andExpect(jsonPath("$.info").value("调用成功"))
+                .andExpect(jsonPath("$.info").value("调用失败"))
                 // 期望响应体中 JSON 的 code 字段为 200（自定义业务成功码）
-                .andExpect(jsonPath("$.code").value("0000"));
+                .andExpect(jsonPath("$.code").value("0001"));
     }
 
     @Test
@@ -133,7 +125,7 @@ public class UserAuthControllerTest {
 
         //3.使用 MockMvc 模拟发起一个 POST 请求到 "/api/auth/register" 接口
         // 设置请求类型为 application/json，并携带前面构造的 JSON 请求体
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/auth/login")
+        mockMvc.perform(post("/api/user/auth/login")
                         .with(csrf()) // ✅ 加上这句,在测试中添加 CSRF token
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))

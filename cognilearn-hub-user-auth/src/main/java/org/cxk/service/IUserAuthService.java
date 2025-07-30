@@ -11,6 +11,5 @@ import org.cxk.trigger.dto.UserRegisterDTO;
  */
 public interface IUserAuthService {
     boolean register(UserRegisterDTO userRegisterDTO);
-    boolean login(UserLoginDTO userLoginDTO);
     boolean delete(UserDeleteDTO userDeleteDTO);
 }

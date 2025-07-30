@@ -97,28 +97,6 @@ public class UserAuthServiceImpl implements IUserAuthService {
     }
 
 
-    @Override
-    public boolean login(UserLoginDTO userLoginDTO) {
-
-        //todo 用authenticationManager来进行账号密码认证
-
-        // 1. 查询用户
-        User user = userRepository.findByUsername(userLoginDTO.getUsername());
-        if (user == null) {
-            throw new RuntimeException("用户不存在");
-        }
-
-        // 2. 校验密码
-        boolean match = passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword());
-        if (!match) {
-            throw new RuntimeException("密码错误");
-        }
-        System.out.println("登录成功");
-        //3. 登录成功，可以生成 Token（如果有 JWT 模块）
-        //todo jwt 三种方法，jwt生成jwtutils返回json
-        // 同时写入redis缓存
-        return true;
-    }
 
     @Override
     //todo 使用缓存降低数据库压力

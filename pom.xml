@@ -15,7 +15,6 @@
         <module>cognilearn-hub-user-auth</module>
         <module>cognilearn-hub-app</module>
         <module>cognilearn-hub-types</module>
-        <module>cognilearn-hub-app</module>
     </modules>
 
     <repositories>
@@ -37,7 +36,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <mybatis.spring.boot.version>2.1.4</mybatis.spring.boot.version>
+        <mybatis-plus.spring.boot.version>3.5.5</mybatis-plus.spring.boot.version>
         <mysql.connector.version>8.0.22</mysql.connector.version>
         <fastjson.version>2.0.28</fastjson.version>
         <commons.lang3.version>3.9</commons.lang3.version>
@@ -73,10 +72,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- MyBatis-Plus -->
             <dependency>
-                <groupId>org.mybatis.spring.boot</groupId>
-                <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>${mybatis.spring.boot.version}</version>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybatis-plus.spring.boot.version}</version>
             </dependency>
             <dependency>
                 <groupId>mysql</groupId>

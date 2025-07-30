@@ -4,18 +4,11 @@
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
+        <option value="$PROJECT_DIR$/cognilearn-hub-user-auth/pom.xml" />
+        <option value="$PROJECT_DIR$/cognilearn-hub-note-manage/pom.xml" />
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/cognilearn-hub-learn-time-plan/pom.xml" />
       </list>
-    </option>
-    <option name="ignoredFiles">
-      <set>
-        <option value="$PROJECT_DIR$/cognilearn-hub-api/pom.xml" />
-        <option value="$PROJECT_DIR$/cognilearn-hub-domain/pom.xml" />
-        <option value="$PROJECT_DIR$/cognilearn-hub-infrastructure/pom.xml" />
-        <option value="$PROJECT_DIR$/cognilearn-hub-study-web-agg/pom.xml" />
-        <option value="$PROJECT_DIR$/cognilearn-hub-trigger/pom.xml" />
-        <option value="$PROJECT_DIR$/cognilearn-hub-user-info/pom.xml" />
-      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK" />

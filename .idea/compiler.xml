@@ -8,40 +8,21 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="cognilearn-hub-learn-time-plan" />
-        <module name="cognilearn-hub-note-manage" />
         <module name="cognilearn-hub-types" />
         <module name="cognilearn-hub-app" />
+        <module name="cognilearn-hub-note-manage" />
         <module name="cognilearn-hub-user-auth" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="cognilearn-hub-ai-learn-ssist" target="1.8" />
-      <module name="cognilearn-hub-api" target="1.8" />
-      <module name="cognilearn-hub-common" target="1.8" />
-      <module name="cognilearn-hub-domain" target="1.8" />
-      <module name="cognilearn-hub-infrastructure" target="1.8" />
-      <module name="cognilearn-hub-study-web-agg" target="1.8" />
-      <module name="cognilearn-hub-trigger" target="1.8" />
-      <module name="cognilearn-hub-user-info" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="cognilearn-hub" options="-parameters" />
-      <module name="cognilearn-hub-ai-learn-ssist" options="-parameters" />
-      <module name="cognilearn-hub-api" options="-parameters" />
       <module name="cognilearn-hub-app" options="-parameters" />
       <module name="cognilearn-hub-backend" options="-parameters" />
-      <module name="cognilearn-hub-common" options="-parameters" />
-      <module name="cognilearn-hub-domain" options="-parameters" />
-      <module name="cognilearn-hub-infrastructure" options="-parameters" />
       <module name="cognilearn-hub-learn-time-plan" options="-parameters" />
       <module name="cognilearn-hub-note-manage" options="-parameters" />
-      <module name="cognilearn-hub-study-web-agg" options="-parameters" />
-      <module name="cognilearn-hub-trigger" options="-parameters" />
       <module name="cognilearn-hub-types" options="-parameters" />
       <module name="cognilearn-hub-user-auth" options="-parameters" />
-      <module name="cognilearn-hub-user-info" options="-parameters" />
     </option>
   </component>
 </project>

@@ -24,8 +24,6 @@ public class UserConverter {
         user.setIsDeleted(entity.getIsDeleted());
         user.setLastLoginTime(entity.getLastLoginTime());
         user.setDelVersion(entity.getDelVersion());
-        user.setCreateTime(new Date()); // 或者 entity.getCreateTime()
-        user.setUpdateTime(new Date()); // 或者 entity.getUpdateTime()
         return user;
     }
 

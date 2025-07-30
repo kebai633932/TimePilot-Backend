@@ -74,3 +74,21 @@ logging:
     root: info
   config: classpath:logback-spring.xml
 
+# jwt
+jwt:
+  rsa:
+    private-key-path: "C:/Users/86133/Desktop/java/private_key.pem"
+    public-key-path: "C:/Users/86133/Desktop/java/public_key.pem"
+  access-token:
+    expiration: 15
+  refresh-token:
+    expiration: 7
+
+# mybatis-plus
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+

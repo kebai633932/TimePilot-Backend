@@ -1,5 +1,6 @@
 package org.cxk.infrastructure.adapter.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import org.cxk.infrastructure.adapter.dao.IUserDao;
 import org.cxk.infrastructure.adapter.dao.converter.UserConverter;
@@ -22,18 +23,30 @@ public class UserRepository implements IUserRepository {
 
     public boolean save(UserEntity userEntity) {
         User user = UserConverter.toPO(userEntity);
-        return userDao.insert(user);
+        return userDao.insert(user)>0;
     }
 
     public User findByUsername(String username) {
-        return userDao.findByUsername(username);
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, username);
+        wrapper.eq(User::getIsDeleted, false); // 增加逻辑删除条件
+        return userDao.selectOne(wrapper);
     }
 
+    @Override
     public List<User> findAll() {
-        return userDao.findAll();
+        return userDao.selectList(
+                new LambdaQueryWrapper<User>()
+                        .eq(User::getIsDeleted, false)
+        );
     }
 
     public boolean deleteByUsername(String username) {
-        return userDao.deleteByUsername(username);
+        if(userDao.deleteByUsername(username)==1){
+            return true;
+        } else if (userDao.deleteByUsername(username)==0) {
+            throw new RuntimeException("用户名重名");
+        }
+        return false;
     }
 }

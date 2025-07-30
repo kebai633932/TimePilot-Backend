@@ -1,28 +1,37 @@
 package org.cxk.infrastructure.adapter.dao.po;
 
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.Set;
 
 /**
- * @author KJH
- * @description 用户实体
- * @create 2025/6/7 21:45
+ * 用户实体类
+ * 对应数据库表：user（如果不是，请在@TableName中指定真实表名）
  */
 @Data
+@TableName("`user`") // 注意反引号防止关键字冲突，如表名是其他名称请修改
 public class User {
+    @TableId(type = IdType.INPUT)
     private Long id;
+
     private String username;
     private String password;
     private String email;
     private String phone;
+
+    @TableLogic // 启用逻辑删除（MP 自动用 is_deleted 字段）
     private Boolean isDeleted;
+
     private Date lastLoginTime;
+
     private Long delVersion;
+
     /** 创建时间 */
+    @TableField(fill = FieldFill.INSERT) // 配合 MP 自动填充
     private Date createTime;
+
     /** 更新时间 */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
-    // 构造函数、getter/setter、equals/hashCode
 }

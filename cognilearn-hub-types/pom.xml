@@ -17,15 +17,17 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
+            <version>1.18.30</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
-            <version>3.44.0</version>
+            <version>3.26.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

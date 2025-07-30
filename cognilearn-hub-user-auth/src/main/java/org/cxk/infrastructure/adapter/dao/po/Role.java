@@ -1,10 +1,9 @@
 package org.cxk.infrastructure.adapter.dao.po;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.*;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
@@ -14,16 +13,27 @@ import java.util.Set;
  * @create 2025/6/7 22:46
  */
 @Data
-public class Role {
+@TableName("role")
+public class Role implements Serializable {
+
+    @TableId(type = IdType.AUTO)
     private Long id;
+
     private String code;
+
     private String name;
+
     private String description;
+
+    @TableLogic  // 逻辑删除字段，配合 MyBatis-Plus 的自动注入
     private Boolean isDeleted;
+
+    @TableField(exist = false)  // 该字段不在 role 表中，只用于查询后封装
     private Set<Permission> permissions;
-    /** 创建时间 */
+
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
-    /** 更新时间 */
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
-    // 构造函数、getter/setter、equals/hashCode
 }

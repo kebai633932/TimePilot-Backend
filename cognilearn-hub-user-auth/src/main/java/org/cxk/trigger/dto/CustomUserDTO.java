@@ -1,0 +1,51 @@
+package org.cxk.trigger.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+
+/**
+ * @author KJH
+ * @description 自定义用户信息 DTO，用于 Spring Security 登录流程
+ * @create 2025/7/29 8:53
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CustomUserDTO  implements UserDetails {
+    private Long id;                   // 用户ID，一般用来标识数据库主键
+    private String username;          // 用户名（用于登录）
+    private String password;          // 密码（用于登录）
+
+    // 下面4个布尔值控制账号状态，决定用户是否允许登录
+    private Boolean isAccountNonExpired = true;      // 账号是否未过期（true = 有效）
+    private Boolean isAccountNonLocked = true;       // 账号是否未被锁定
+    private Boolean isCredentialsNonExpired = true;  // 凭据（密码）是否未过期
+    private Boolean isEnabled = true;                // 是否启用账号（false = 禁用）
+
+    // 用户的权限集合（可以为空）
+    private Collection<? extends GrantedAuthority> authorities;
+    @Override
+    public boolean isAccountNonExpired() {
+        return Boolean.TRUE.equals(isAccountNonExpired);
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return Boolean.TRUE.equals(isAccountNonLocked);
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return Boolean.TRUE.equals(isCredentialsNonExpired);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return Boolean.TRUE.equals(isEnabled);
+    }
+}
