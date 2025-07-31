@@ -1,3 +1,3 @@
-/cognilearn-hub-app/src/main/resources/
-
-/cognilearn-hub-app/src/main/resources/application-dev.yml
+cognilearn-hub-app/src/main/resources/
+# 方式1：精确路径
+cognilearn-hub-app/src/main/resources/application-dev.yml
