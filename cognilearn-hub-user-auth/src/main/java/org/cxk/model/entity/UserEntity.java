@@ -20,7 +20,6 @@ import java.util.Set;
 public class UserEntity {
     private Long id;
     private String username;
-    private String realName;
     private String password;
     private String email;
     private String phone;

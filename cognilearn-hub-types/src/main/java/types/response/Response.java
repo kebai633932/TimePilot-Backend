@@ -41,5 +41,12 @@ public class Response<T> implements Serializable {
                 .data(null)
                 .build();
     }
+    public static <T> Response<T> error(ResponseCode code,String s) {
+        return Response.<T>builder()
+                .code(code.getCode())
+                .info(s)
+                .data(null)
+                .build();
+    }
 
 }
