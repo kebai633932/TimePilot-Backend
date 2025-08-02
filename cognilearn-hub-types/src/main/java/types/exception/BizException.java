@@ -2,6 +2,7 @@ package types.exception;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import types.enums.ResponseCode;
 
 /**
  * @author KJH
@@ -22,6 +23,10 @@ public class BizException  extends RuntimeException {
 
     public BizException (String code) {
         this.code = code;
+    }
+    public BizException (ResponseCode responseCode) {
+        this.code = responseCode.getCode();
+        this.info = responseCode.getInfo();
     }
 
     public BizException (String code, Throwable cause) {

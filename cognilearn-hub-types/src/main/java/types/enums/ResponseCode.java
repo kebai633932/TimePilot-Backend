@@ -22,9 +22,19 @@ public enum ResponseCode {
     HYSTRIX("0006", "访问熔断拦截"),
 
     // 业务错误码，建议以 ERR_BIZ_ 开头
-    VERIFICATION_CODE_ERROR("ERR_BIZ_VERIFICATION_CODE", "验证码错误"),
+    VERIFICATION_CODE_ERROR("ERR_BIZ_001", "验证码不匹配,输入错误"),
 
     // 配置错误码,以ERR_CONFIG_
+
+    // 中间件相关错误码 ERR_MIDDLE_
+    REDIS_UNAVAILABLE("ERR_MIDDLE_001", "Redis 不可用"),
+    MYSQL_CONNECTION_ERROR("ERR_MIDDLE_002", "数据库连接失败"),
+    MQ_SEND_FAILED("ERR_MIDDLE_003", "消息发送失败"),
+    LOCAL_CACHE_FAIL("ERR_MIDDLE_004", "本地缓存读取失败"),
+    // 服务类错误码 ERR_SERVICE_
+    EMAIL_SEND_ERROR("ERR_SERVICE_001", "邮件发送失败"),
+
+
     ;
 
     private final String code;

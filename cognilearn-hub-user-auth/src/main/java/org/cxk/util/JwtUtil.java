@@ -127,19 +127,19 @@ public class JwtUtil {
     /**
      * 生成访问令牌
      */
-    public String generateAccessToken(Long id, Collection<? extends GrantedAuthority> authorities) {
-        return buildToken(id, ACCESS_TOKEN_TYPE, accessTokenExpiration * 60 * 1000L,authorities);
+    public String generateAccessToken(Long id, Collection<? extends GrantedAuthority> authorities,String deviceId) {
+        return buildToken(id, ACCESS_TOKEN_TYPE, accessTokenExpiration * 60 * 1000L,authorities,deviceId);
     }
     /**
      * 生成刷新令牌
      */
-    public String generateRefreshToken(Long id, Collection<? extends GrantedAuthority> authorities) {
-        return buildToken(id, REFRESH_TOKEN_TYPE, refreshTokenExpiration * 24 * 60 * 60 * 1000L,authorities);
+    public String generateRefreshToken(Long id, Collection<? extends GrantedAuthority> authorities,String deviceId) {
+        return buildToken(id, REFRESH_TOKEN_TYPE, refreshTokenExpiration * 24 * 60 * 60 * 1000L,authorities,deviceId);
     }
     /**
      * 构建JWT令牌
      */
-    private String buildToken(Long id, String tokenType, long expiration, Collection<? extends GrantedAuthority> authorities) {
+    private String buildToken(Long id, String tokenType, long expiration, Collection<? extends GrantedAuthority> authorities,String deviceId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(TOKEN_TYPE_CLAIM, tokenType);
 
@@ -147,7 +147,7 @@ public class JwtUtil {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
         claims.put("roles", roleNames); // 转为字符串列表
-
+        claims.put("deviceId", deviceId);
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(String.valueOf(id)) // 转为字符串

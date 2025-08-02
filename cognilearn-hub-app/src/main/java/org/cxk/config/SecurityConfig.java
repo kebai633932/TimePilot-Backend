@@ -83,8 +83,9 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .antMatchers(
-                        "/api/user/login",
-                        "/api/user/register",
+                        "/api/user/auth/login",
+                        "/api/user/auth/register",
+                        "/api/user/auth/sendEmailCode",
                         "/api/user/refresh-token",
                         "/api/public/**"
                 ).permitAll()

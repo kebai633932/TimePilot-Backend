@@ -2,11 +2,14 @@ package org.cxk.trigger.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.cxk.trigger.dto.CustomUserDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
 import org.cxk.trigger.exception.UsernameNotExistsException;
 import org.cxk.util.JwtUtil;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.RedisConnectionException;
+import org.redisson.client.RedisTimeoutException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,7 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
+@Slf4j
 public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
@@ -48,14 +51,18 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
             throws AuthenticationException {
         try {
             UserLoginDTO loginDTO = new ObjectMapper().readValue(request.getInputStream(), UserLoginDTO.class);
-            // 布隆过滤器未创建
+
             if (redisUserBloomFilter == null) {
-                throw new RuntimeException("布隆过滤器出错，未创建");
+                throw new RuntimeException("布隆过滤器未创建");
             }
-            // 布隆过滤器快速判断用户名是否存在，减少无效数据库查询
-            if (!redisUserBloomFilter.mightContain(loginDTO.getUsername())) {
-                // 用户名不存在，直接抛异常，拦截请求
-                throw new UsernameNotExistsException("用户名不存在（布隆过滤器拦截）");
+
+            try {
+                if (!redisUserBloomFilter.mightContain(loginDTO.getUsername())) {
+                    throw new UsernameNotExistsException("用户名不存在（布隆过滤器拦截）");
+                }
+            } catch (RedisConnectionException | RedisTimeoutException e) {
+                log.error("Redis异常，跳过布隆过滤器校验: {}", e.getMessage());
+                // Redis不可用抛的异常，放行继续认证
             }
 
             Authentication token = new UsernamePasswordAuthenticationToken(
@@ -83,6 +90,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         Long userId = customUser.getId();
 
         // 2. 从请求头中获取 deviceId（前端必须传）
+        // todo 前端，deviceId需要持久化到localStorage
         String deviceId = request.getHeader("X-Device-Id");
         if (deviceId == null || deviceId.trim().isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -93,8 +101,8 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         }
 
         // 3. 生成 Token
-        String accessToken = jwtUtil.generateAccessToken(userId, customUser.getAuthorities());
-        String refreshToken = jwtUtil.generateRefreshToken(userId, customUser.getAuthorities());
+        String accessToken = jwtUtil.generateAccessToken(userId, customUser.getAuthorities(),deviceId);
+        String refreshToken = jwtUtil.generateRefreshToken(userId, customUser.getAuthorities(),deviceId);
 
         long accessTokenExpire = jwtUtil.getAccessTokenExpiration();
         long refreshTokenExpire = jwtUtil.getRefreshTokenExpiration();

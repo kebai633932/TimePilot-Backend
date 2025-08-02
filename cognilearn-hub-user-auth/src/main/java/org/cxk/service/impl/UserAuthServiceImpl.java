@@ -7,16 +7,26 @@ import org.cxk.infrastructure.adapter.dao.po.User;
 import org.cxk.model.entity.UserEntity;
 import org.cxk.service.IUserAuthService;
 import org.cxk.service.repository.IUserRepository;
+import org.cxk.service.repository.IUserRoleRepository;
 import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
 
+import org.cxk.trigger.filter.RedisUserBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.RedisConnectionException;
+import org.redisson.client.RedisTimeoutException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import types.exception.BizException;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,34 +40,49 @@ import java.util.concurrent.TimeUnit;
 public class UserAuthServiceImpl implements IUserAuthService {
 
     private final IUserRepository userRepository;
-
+    private final IUserRoleRepository userRoleRepository;
     //todo 用authenticationManager来进行账号密码认证
     private final AuthenticationManager authenticationManager;
     private final BCryptPasswordEncoder passwordEncoder;
 
-
     private final RedissonClient redissonClient;
 
-
-    //todo
+    private final TransactionTemplate transactionTemplate;
+    private final RedisUserBloomFilter redisUserBloomFilter;
     @Override
     public boolean register(UserRegisterDTO dto) {
         String username = dto.getUsername();
         String password = dto.getPassword();
 
-        // 3. 获取redis分布式锁（锁粒度按用户名）
         String lockKey = "lock:register:" + username;
         RLock lock = redissonClient.getLock(lockKey);
 
+        boolean redisAvailable = true;
+        boolean locked = false;
+
         try {
-            // 4. 尝试加锁（最多等待3秒，加锁成功后10秒内自动释放）
-            if (!lock.tryLock(3, 10, TimeUnit.SECONDS)) {
-                throw new RuntimeException("注册请求过多，请稍后再试");
+            // 尝试获取分布式锁
+            try {
+                //  建议参数化或根据实际并发量、服务延迟评估
+                locked = lock.tryLock(1, 5, TimeUnit.SECONDS);
+            } catch (RedisConnectionException | RedisTimeoutException | IllegalStateException e) {
+                redisAvailable = false;
+                log.warn("Redis 不可用，注册流程将跳过分布式锁（已开启唯一索引兜底）", e);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("线程中断，注册失败", e);
             }
 
-            // 5. 构建用户实体
+            // Redis 可用但未成功获取锁
+            if (redisAvailable && !locked) {
+                throw new RuntimeException("注册请求过多或系统繁忙，请稍后再试");
+            }
+            //todo 后续如果数据库瞬时压力爆炸，做限流
+            //注册逻辑
+            Long userId = TinyId.nextId("auth_register");
+
             UserEntity user = UserEntity.builder()
-                    .id(TinyId.nextId("auth_register"))
+                    .id(userId)
                     .username(username)
                     .phone(dto.getPhone())
                     .email(dto.getEmail())
@@ -65,44 +90,69 @@ public class UserAuthServiceImpl implements IUserAuthService {
                     .isDeleted(false)
                     .delVersion(0L)
                     .build();
+            // 事务执行
+            // 默认角色：普通用户
+            // 成功
+            transactionTemplate.execute(status -> {
+                try {
+                    userRepository.save(user);
 
-            // 6. 插入数据库，唯一索引兜底
-            return userRepository.save(user);
-        } catch (DuplicateKeyException e) {
-            throw new RuntimeException("用户名已存在");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("线程中断，注册失败");
-        } finally {
+                    // 默认角色：普通用户
+                    List<Long> roleIds = Collections.singletonList(2L);
+                    userRoleRepository.insertUserRoles(userId, roleIds);
+
+                    return true; // 成功
+                } catch (DuplicateKeyException e) {
+                    status.setRollbackOnly();
+                    throw new BizException("用户名已存在");
+                } catch (Exception e) {
+                    status.setRollbackOnly();
+                    throw e;
+                }
+            });
+            //执行布隆过滤器插入
             try {
-                if (lock.isHeldByCurrentThread()) {
+                redisUserBloomFilter.add(username);
+            } catch (Exception e) {
+                log.error("布隆过滤器写入异常，不影响注册流程", e);
+                //TODO: 异步重试，发送MQ，异步通知消费者去重试写入布隆过滤器
+                // 消费者重试若多次失败，再写入数据库补偿表（task表）以便后续人工或定时任务处理
+            }
+            return true;
+        } finally {
+            // 仅在锁成功时才释放
+            try {
+                if (locked && lock.isHeldByCurrentThread()) {
                     lock.unlock();
                 }
             } catch (Exception e) {
-                log.error("释放注册锁异常", e); // ✅ 正确使用 @Slf4j 的日志
+                log.error("释放注册锁异常", e);
             }
         }
     }
 
 
-
     @Override
-    //todo 使用缓存降低数据库压力
-//    @CacheEvict(value = "user", key = "#username")
     public boolean delete(UserDeleteDTO userDeleteDTO) {
-        // 1. 查询用户
-        User user = userRepository.findByUsername(userDeleteDTO.getUsername());
-        if (user == null) {
-            throw new RuntimeException("用户不存在");
-        }
+        // 删除用户角色关联
+        // 逻辑删除用户
+        return Boolean.TRUE.equals(transactionTemplate.execute(status -> {
+            User user = userRepository.findByUsername(userDeleteDTO.getUsername());
+            if (user == null) {
+                throw new RuntimeException("用户不存在");
+            }
 
-        // 2. 逻辑删除
-        return userRepository.deleteByUsername(userDeleteDTO.getUsername());
+            // 删除用户角色关联
+            userRoleRepository.deleteByUserId(user.getId());
 
-        //todo redis删除相关数据
-        //todo 从布隆过滤器移除
-        //todo 需要写入事务表+事务补偿，确保清除干净
+            // 逻辑删除用户
+            boolean deleted = userRepository.deleteByUsername(userDeleteDTO.getUsername());
 
+            // TODO: 异步清理缓存和布隆过滤器
+
+            return deleted;
+        }));
     }
+
 
 }

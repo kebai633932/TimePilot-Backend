@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
  */
 public class VerificationUtil {
 
-    // 邮箱正则：基本格式校验（可根据业务需求调整复杂度）
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
     // 手机号正则：以中国大陆手机号为例（以1开头 + 10位数字）
     private static final Pattern SMS_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
@@ -20,13 +18,6 @@ public class VerificationUtil {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile(
             "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d@#$%^&+=!~*()_\\-]{8,20}$"
     );
-
-    /**
-     * 校验邮箱格式
-     */
-    public static boolean isValidEmail(String email) {
-        return email != null && EMAIL_PATTERN.matcher(email).matches();
-    }
 
     /**
      * 校验手机号格式（国内手机号）

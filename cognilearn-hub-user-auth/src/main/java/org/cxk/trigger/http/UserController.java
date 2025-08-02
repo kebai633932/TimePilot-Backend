@@ -1,23 +1,16 @@
 package org.cxk.trigger.http;
 
-import cn.hutool.core.util.RandomUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.cxk.service.IEmailService;
 import org.cxk.service.IUserAuthService;
 import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
 import org.cxk.trigger.dto.type.RegisterType;
-import org.cxk.util.JwtUtil;
-import org.cxk.util.VerificationUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 import types.enums.ResponseCode;
 import types.response.Response;
-
-import java.util.concurrent.TimeUnit;
-
 
 /**
  * @author KJH
@@ -27,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 //todo
 @Slf4j
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/user/auth")
 @AllArgsConstructor
 public class UserController {
 
@@ -52,7 +45,7 @@ public class UserController {
             // 2. 调用注册服务
             boolean success = userAuthService.register(dto);
             return success
-                    ? Response.success(true)
+                    ? Response.success(true, "注册成功")
                     : Response.error(ResponseCode.UN_ERROR);
         } catch (Exception e) {
             // 注意避免打印密码
@@ -63,19 +56,19 @@ public class UserController {
                     .build();
         }
     }
-    // 你也可以添加发送验证码接口
+    // 发送邮箱验证码接口
     @PostMapping("/sendEmailCode")
     public Response<Boolean> sendEmailCode(@RequestParam String email) {
         // 1.校验邮箱格式是否有效
-        if (!VerificationUtil.isValidEmail(email)) {
+        if (!EmailValidator.getInstance().isValid(email)) {
             return Response.error(ResponseCode.ILLEGAL_PARAMETER, "邮箱格式不正确");
         }
 
         try {
             // 2.发送验证码邮件
             emailService.sendVerificationEmail(email);
-
-            return Response.success(true);
+            //用了异步后，这里只是服务器发送验证码到SMTP成功，后续不知道
+            return Response.success(true,"发送验证码成功");
         } catch (Exception e) {
             log.error("发送邮箱验证码失败，邮箱：{}", email, e);
             return Response.error(ResponseCode.UN_ERROR, "发送验证码失败");
@@ -88,7 +81,7 @@ public class UserController {
         try {
             boolean success = userAuthService.delete(dto);
             return success
-                    ? Response.success(true)
+                    ? Response.success(true, "发送验证码成功")
                     : Response.error(ResponseCode.UN_ERROR);
         } catch (Exception e) {
             log.error("删除失败，参数：{}", dto.getUsername(), e);

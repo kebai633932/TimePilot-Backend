@@ -1,5 +1,7 @@
 package org.cxk.service;
 
+import com.google.protobuf.ServiceException;
+
 /**
  * @author KJH
  * @description
@@ -7,7 +9,7 @@ package org.cxk.service;
  */
 public interface IEmailService {
     void sendEmail(String toEmail, String subject, String content);
-    boolean verifyEmailCode(String email, String code);
+    boolean verifyEmailCode(String email, String code) throws ServiceException;
 
-    void sendVerificationEmail(String email);
+    void sendVerificationEmail(String email) throws ServiceException;
 }
