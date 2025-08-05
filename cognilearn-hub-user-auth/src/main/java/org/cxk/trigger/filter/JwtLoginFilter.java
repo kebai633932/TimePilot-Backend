@@ -14,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -24,9 +25,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 @Slf4j
 public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -84,12 +86,8 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         if (jwtUtil == null) {
             throw new IllegalStateException("JwtUtil 未注入");
         }
-        //1. 将Authentication 保存到 线程上下文
-        SecurityContextHolder.getContext().setAuthentication(authResult);
 
-        Long userId = customUser.getId();
-
-        // 2. 从请求头中获取 deviceId（前端必须传）
+        // 1. 从请求头中获取 deviceId（前端必须传）
         // todo 前端，deviceId需要持久化到localStorage
         String deviceId = request.getHeader("X-Device-Id");
         if (deviceId == null || deviceId.trim().isEmpty()) {
@@ -99,23 +97,39 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
             response.getWriter().write("{\"code\":400,\"message\":\"缺少设备ID（X-Device-Id）\"}");
             return;
         }
+        //2. 重构Authentication，并保存到 线程上下文
+        customUser.setDeviceId(deviceId);
+        //调用了这个构造函数，并且 authorities 不为 null，对象就会默认 authenticated = true
+        UsernamePasswordAuthenticationToken authenticationResult= new UsernamePasswordAuthenticationToken(customUser,authResult.getCredentials(),authResult.getAuthorities());
+        authenticationResult.setDetails(authResult.getDetails());
 
-        // 3. 生成 Token
-        String accessToken = jwtUtil.generateAccessToken(userId, customUser.getAuthorities(),deviceId);
-        String refreshToken = jwtUtil.generateRefreshToken(userId, customUser.getAuthorities(),deviceId);
+        SecurityContextHolder.getContext().setAuthentication(authenticationResult);
 
-        long accessTokenExpire = jwtUtil.getAccessTokenExpiration();
-        long refreshTokenExpire = jwtUtil.getRefreshTokenExpiration();
+        String username = customUser.getUsername();
+        Long userId = customUser.getId();
+        List<String> roleList = extractRoles(customUser);
+        // 生成JTI和令牌
+        String jti = UUID.randomUUID().toString();
+        String accessToken = jwtUtil.generateAccessToken(
+                username,
+                roleList,
+                deviceId,
+                userId
+        );
 
-        // 4. 存入 Redis，key 带上 deviceId
-        redissonClient.getBucket("login:token:" + userId + ":" + deviceId)
-                .set(accessToken, accessTokenExpire, TimeUnit.SECONDS);
+        String refreshToken = jwtUtil.generateRefreshToken(
+                username,
+                jti,
+                roleList,
+                deviceId,
+                userId
+        );
 
-        redissonClient.getBucket("login:refresh:" + userId + ":" + deviceId)
-                .set(refreshToken, refreshTokenExpire, TimeUnit.DAYS);
-
-        // 5. 记录设备 ID（方便全局登出）
-        redissonClient.getSet("login:session:" + userId).add(deviceId);
+        // 保存JTI到Redis
+        jwtUtil.saveRefreshTokenJti(userId, deviceId, jti);
+//
+//        // 5. 记录设备 ID（方便全局登出）
+//        redissonClient.getSet("login:session:" + userId).add(deviceId);
 
         // 6. 返回响应
         Map<String, Object> result = new HashMap<>();
@@ -129,7 +143,12 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         response.getWriter().write(new ObjectMapper().writeValueAsString(result));
     }
 
-
+    private List<String> extractRoles(CustomUserDTO customUser) {
+        Collection<? extends GrantedAuthority> authorities = customUser.getAuthorities();
+        return authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+    }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,

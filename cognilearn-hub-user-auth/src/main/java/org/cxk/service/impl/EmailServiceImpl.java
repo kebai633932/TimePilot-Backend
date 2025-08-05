@@ -3,6 +3,7 @@ package org.cxk.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.service.IEmailService;
+import org.cxk.trigger.aop.EmailRateLimit;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-
 public class EmailServiceImpl implements IEmailService {
 
     @Resource
@@ -56,9 +56,7 @@ public class EmailServiceImpl implements IEmailService {
             throw new BizException("邮件发送失败，请稍后重试");
         }
     }
-    //todo 用 Lua 脚本做 Redis 分布式限流
-    // 单日总发送量	最好 <300 封（500 是极限）
-    //todo 单 IP/邮箱 发信频率	1 封/5~10 秒 更稳妥
+
     @Override
     public void sendVerificationEmail(String email) {
         // 1. 生成6位数字验证码
@@ -86,8 +84,11 @@ public class EmailServiceImpl implements IEmailService {
     }
 
     /**
-     * 带重试机制的邮件发送
+     * 带重试机制的邮件发送， 用 Lua 脚本做 Redis 分布式限流
+     * @see org.cxk.trigger.aop.EmailRateLimitAspect
+     * @see org.cxk.trigger.aop.EmailRateLimit
      */
+    @EmailRateLimit
     private void sendEmailWithRetry(String email, String code) {
         int attempt = 0;
         while (true) {
@@ -132,7 +133,7 @@ public class EmailServiceImpl implements IEmailService {
 
             // 1. 验证码匹配
             if (code != null && code.equals(storedCode)) {
-                bucket.delete(); // 验证成功后删除
+                bucket.delete(); // 验证成功后删除，防止重复使用验证码（重放攻击）
                 return true;
             }
             //todo 需要等qps上来，Redis 宕机验证码系统就不可用了，需要降级、兜底等

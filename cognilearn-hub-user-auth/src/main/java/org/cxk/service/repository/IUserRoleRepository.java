@@ -1,5 +1,6 @@
 package org.cxk.service.repository;
 
+import org.cxk.infrastructure.adapter.dao.po.User;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -16,4 +17,7 @@ public interface IUserRoleRepository {
     List<Long> findRoleIdsByUserId(@Param("userId") Long userId);
 
     void deleteByUserId(Long id);
+
+
+
 }

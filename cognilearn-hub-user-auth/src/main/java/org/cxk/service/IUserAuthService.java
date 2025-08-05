@@ -1,8 +1,6 @@
 package org.cxk.service;
 
-import org.cxk.trigger.dto.UserDeleteDTO;
-import org.cxk.trigger.dto.UserLoginDTO;
-import org.cxk.trigger.dto.UserRegisterDTO;
+import org.cxk.trigger.dto.*;
 
 /**
  * @author KJH
@@ -12,4 +10,11 @@ import org.cxk.trigger.dto.UserRegisterDTO;
 public interface IUserAuthService {
     boolean register(UserRegisterDTO userRegisterDTO);
     boolean delete(UserDeleteDTO userDeleteDTO);
+
+    // 忘记密码用，校验验证码 + 设置新密码
+    boolean resetPassword(ForgotPasswordResetDTO dto);
+
+    // 登录后修改密码，需要验证旧密码
+    boolean resetPasswordAfterLogin(String username, ResetPasswordDTO dto);
+
 }

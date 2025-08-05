@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.cxk.infrastructure.adapter.dao.po.User;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -24,4 +25,17 @@ public interface IUserDao extends BaseMapper<User> {
             "update_time = NOW() " +
             "WHERE username = #{username} AND is_deleted = 0")
     int deleteByUsername(String username);
+
+
+    // 查询拥有该邮箱的用户数量
+    @Select("SELECT COUNT(*) FROM `user` WHERE email = #{email} AND is_deleted = 0")
+    int countByEmail(@Param("email") String email);
+
+    // 查询拥有该手机号的用户数量
+    @Select("SELECT COUNT(*) FROM `user` WHERE phone = #{phone} AND is_deleted = 0")
+    int countByPhone(@Param("phone") String phone);
+    @Update("UPDATE `user` " +
+            "SET password = #{encodedPassword}  " +
+            "WHERE username = #{username} AND is_deleted = 0")
+    int updatePasswordByUsername(String username, String encodedPassword);
 }

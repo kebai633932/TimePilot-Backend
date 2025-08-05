@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import org.cxk.infrastructure.adapter.dao.IUserDao;
 import org.cxk.infrastructure.adapter.dao.IUserRoleDao;
+import org.cxk.infrastructure.adapter.dao.po.User;
 import org.cxk.infrastructure.adapter.dao.po.UserRole;
 import org.cxk.service.repository.IUserRepository;
 import org.cxk.service.repository.IUserRoleRepository;
@@ -50,5 +51,7 @@ public class UserRoleRepository implements IUserRoleRepository {
     public void deleteByUserId(Long id) {
         userRoleDao.deleteByUserId(id);
     }
+
+
 }
 

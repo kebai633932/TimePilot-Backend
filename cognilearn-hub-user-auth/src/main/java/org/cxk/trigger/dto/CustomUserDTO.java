@@ -1,11 +1,13 @@
 package org.cxk.trigger.dto;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -16,11 +18,11 @@ import java.util.Collection;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomUserDTO  implements UserDetails {
+public class CustomUserDTO  implements UserDetails , Serializable {
     private Long id;                   // 用户ID，一般用来标识数据库主键
     private String username;          // 用户名（用于登录）
     private String password;          // 密码（用于登录）
-
+    private String deviceId;  // 新增设备ID字段
     // 下面4个布尔值控制账号状态，决定用户是否允许登录
     private Boolean isAccountNonExpired = true;      // 账号是否未过期（true = 有效）
     private Boolean isAccountNonLocked = true;       // 账号是否未被锁定
@@ -29,6 +31,19 @@ public class CustomUserDTO  implements UserDetails {
 
     // 用户的权限集合（可以为空）
     private Collection<? extends GrantedAuthority> authorities;
+
+    public CustomUserDTO(Long userId, String username, String password, String deviceId,Collection<? extends GrantedAuthority> authorities) {
+        this.id=userId;
+        this.username=username;
+        this.password=password;
+        this.deviceId=deviceId;
+        this.authorities=authorities;
+        this.isAccountNonExpired = true;
+        this.isAccountNonLocked = true;
+        this.isCredentialsNonExpired = true;
+        this.isEnabled = true;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return Boolean.TRUE.equals(isAccountNonExpired);

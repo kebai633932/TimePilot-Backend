@@ -2,7 +2,7 @@ package org.cxk.trigger.dto;
 
 import lombok.Data;
 import lombok.Getter;
-import org.cxk.trigger.dto.type.RegisterType;
+import org.cxk.trigger.dto.type.VerificationChannelType;
 
 import java.io.Serializable;
 
@@ -19,5 +19,5 @@ public class UserRegisterDTO implements Serializable {
     private String email;            // 邮箱（邮箱注册用）
     private String phone;            // 手机号（短信注册用）
     private String verificationCode; // 验证码（邮箱或短信验证码）
-    private RegisterType registerType; // 注册方式枚举，如 EMAIL, SMS 等
+    private VerificationChannelType verificationChannelType; // 注册方式枚举，如 EMAIL, SMS 等
 }

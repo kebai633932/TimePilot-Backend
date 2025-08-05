@@ -13,11 +13,11 @@ public class VerificationUtil {
 
     // 用户名正则：字母开头，允许字母数字下划线，长度3-16位
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]{2,15}$");
-
-    // 密码正则：必须包含大小写字母和数字，长度8-20位，允许特殊符号
+    // 密码正则：必须包含大小写字母和数字，长度8-20位，不允许特殊符号
     private static final Pattern PASSWORD_PATTERN = Pattern.compile(
-            "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d@#$%^&+=!~*()_\\-]{8,20}$"
+            "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,20}$"
     );
+
 
     /**
      * 校验手机号格式（国内手机号）

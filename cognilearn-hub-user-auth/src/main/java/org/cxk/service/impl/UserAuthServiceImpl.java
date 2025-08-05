@@ -8,6 +8,8 @@ import org.cxk.model.entity.UserEntity;
 import org.cxk.service.IUserAuthService;
 import org.cxk.service.repository.IUserRepository;
 import org.cxk.service.repository.IUserRoleRepository;
+import org.cxk.trigger.dto.ForgotPasswordResetDTO;
+import org.cxk.trigger.dto.ResetPasswordDTO;
 import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
 
@@ -90,9 +92,9 @@ public class UserAuthServiceImpl implements IUserAuthService {
                     .isDeleted(false)
                     .delVersion(0L)
                     .build();
+
             // 事务执行
             // 默认角色：普通用户
-            // 成功
             transactionTemplate.execute(status -> {
                 try {
                     userRepository.save(user);
@@ -131,6 +133,60 @@ public class UserAuthServiceImpl implements IUserAuthService {
         }
     }
 
+    @Override
+    public boolean resetPassword(ForgotPasswordResetDTO dto) {
+        String username = dto.getUsername();
+        String rawPassword = dto.getPassword();
+
+        String lockKey = "lock:resetPassword:" + username;
+        RLock lock = redissonClient.getLock(lockKey);
+
+        boolean locked = false;
+
+        try {
+            try {
+                locked = lock.tryLock(1, 5, TimeUnit.SECONDS);
+            } catch (RedisConnectionException | RedisTimeoutException | IllegalStateException e) {
+                //todo 后续要高可用可以加乐观锁（版本号）控制并发更新
+                log.error("Redis 不可用，重置密码中止", e);
+                throw new RuntimeException("系统繁忙，请稍后再试（REDIS 不可用）");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("线程中断，密码重置失败", e);
+            }
+
+            if (!locked) {
+                throw new RuntimeException("请求过多，请稍后再试");
+            }
+
+            // 密码加密
+            String encodedPassword = passwordEncoder.encode(rawPassword);
+
+            // 更新数据库
+            int rows = userRepository.updatePasswordByUsername(username, encodedPassword);
+            if (rows == 0) {
+                throw new RuntimeException("用户不存在或已删除");
+            }
+
+            return true;
+
+        } finally {
+            try {
+                if (locked && lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            } catch (Exception e) {
+                log.error("释放重置密码锁异常", e);
+            }
+        }
+    }
+
+
+    @Override
+    public boolean resetPasswordAfterLogin(String username, ResetPasswordDTO dto) {
+        return false;
+    }
+
 
     @Override
     public boolean delete(UserDeleteDTO userDeleteDTO) {
@@ -148,11 +204,11 @@ public class UserAuthServiceImpl implements IUserAuthService {
             // 逻辑删除用户
             boolean deleted = userRepository.deleteByUsername(userDeleteDTO.getUsername());
 
-            // TODO: 异步清理缓存和布隆过滤器
+            // TODO: 异步清理缓存要做，认证的token都删除
+            //  布隆过滤器不一定需要，影响不大，还可以重加载
 
             return deleted;
         }));
     }
-
 
 }

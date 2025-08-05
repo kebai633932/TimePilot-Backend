@@ -21,12 +21,14 @@ import java.util.stream.Collectors;
 @Repository
 @AllArgsConstructor
 public class UserRepository implements IUserRepository {
+
     private final IUserDao userDao;
 
     public boolean save(UserEntity userEntity) {
         User user = UserConverter.toPO(userEntity);
-        return userDao.insert(user)>0;
+        return userDao.insert(user) > 0;
     }
+
     public List<String> getAllUsernames() {
         return userDao.selectList(
                 new LambdaQueryWrapper<User>().select(User::getUsername)
@@ -49,11 +51,27 @@ public class UserRepository implements IUserRepository {
     }
 
     public boolean deleteByUsername(String username) {
-        if(userDao.deleteByUsername(username)==1){
+        if (userDao.deleteByUsername(username) == 1) {
             return true;
-        } else if (userDao.deleteByUsername(username)==0) {
+        } else if (userDao.deleteByUsername(username) == 0) {
             throw new RuntimeException("用户名重名");
         }
         return false;
+    }
+
+    @Override
+    public int countByEmail(String email) {
+        return userDao.countByEmail(email);
+    }
+
+    @Override
+    public int countByPhone(String phone) {
+
+        return userDao.countByPhone(phone);
+    }
+
+    @Override
+    public int updatePasswordByUsername(String username, String encodedPassword) {
+        return userDao.updatePasswordByUsername(username,encodedPassword);
     }
 }

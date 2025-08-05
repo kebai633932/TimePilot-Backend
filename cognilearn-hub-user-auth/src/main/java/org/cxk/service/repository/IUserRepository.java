@@ -19,4 +19,9 @@ public interface IUserRepository {
     public List<String> getAllUsernames();
     public List<User> findAll();
     public boolean deleteByUsername(String username);
+
+    int countByEmail(String email);
+    int countByPhone(String phone);
+
+    int updatePasswordByUsername(String username, String encodedPassword);
 }

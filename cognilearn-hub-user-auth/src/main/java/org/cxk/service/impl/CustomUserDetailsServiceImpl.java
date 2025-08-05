@@ -52,6 +52,7 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
         userDetails.setUsername(user.getUsername());
         userDetails.setPassword(user.getPassword());
         userDetails.setAuthorities(authorities); // 赋予权限
+        userDetails.setDeviceId(null);//
         userDetails.setIsAccountNonExpired(true);
         userDetails.setIsAccountNonLocked(true);
         userDetails.setIsCredentialsNonExpired(true);

@@ -14,7 +14,7 @@ is_del按Java通用开发手册，取值范围为0,1
 
 流程图：
 
-![image.png](assets/image.png?t=1753853744351)
+![image.png](assets/image2.png)
 
 经分析[有缓存穿透的风险：用redis做布隆过滤器](https://)（**布隆过滤器可以判断某个数据一定不存在，但是无法判断一定存在**。）
 
@@ -78,9 +78,15 @@ is_del按Java通用开发手册，取值范围为0,1
 
 7.验证码防攻击策略：随机过期，防redis大量缓存同一时间失效
 
-6.短信，邮件防刷限流  使用：Spring AOP + Redis Lua 限流
+8.短信，邮件防刷限流
 
 灰度限流降级（Sentinel + 自定义策略）部分直接提示“系统繁忙，请稍后再试”
+
+使用：Spring AOP + Redis Lua 限流。SETEX 间隔锁 实现频率间隔； ZSet（ZADD + ZREMRANGE） 滑动窗口 实现超过每小时数量限制放入黑名单；Set（SADD）做黑名单；`INCR` + `EXPIREAT`做系统总量限制
+
+9.忘记密码
+
+10.退出
 
 
 | 问题     | 原因                               | 防御方法                         |
