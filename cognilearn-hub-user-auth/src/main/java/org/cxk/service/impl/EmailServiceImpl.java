@@ -9,6 +9,8 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import types.exception.BizException;
 
@@ -84,44 +86,32 @@ public class EmailServiceImpl implements IEmailService {
     }
 
     /**
-     * 带重试机制的邮件发送， 用 Lua 脚本做 Redis 分布式限流
+     * 带重试机制的邮件发送，用 Lua 脚本做 Redis 分布式限流
      * @see org.cxk.trigger.aop.EmailRateLimitAspect
      * @see org.cxk.trigger.aop.EmailRateLimit
      */
+    @Retryable(
+            value = { Exception.class },              // 遇到哪些异常时触发重试
+            maxAttempts = 4,                          // 最多尝试 4 次（初次 + 3 次重试）
+            backoff = @Backoff(
+                    delay = 1000,       // 初始延迟 1 秒
+                    multiplier = 2,     // 每次重试的延迟乘以 2
+                    maxDelay = 10000,   // 延迟最长不超过 10 秒
+                    random = true       // 加入随机抖动（避免多个请求同时重试）
+            )
+    )
     @EmailRateLimit
     private void sendEmailWithRetry(String email, String code) {
-        int attempt = 0;
-        while (true) {
-            try {
-                String subject = "验证码通知";
-                String content = String.format(
-                        "您好，您的验证码是：<strong>%s</strong>，有效期为%d分钟，请及时验证。",
-                        code, CODE_EXPIRY_MINUTES
-                );
+        String subject = "验证码通知";
+        String content = String.format(
+                "您好，您的验证码是：<strong>%s</strong>，有效期为%d分钟，请及时验证。",
+                code, CODE_EXPIRY_MINUTES
+        );
 
-                sendEmail(email, subject, content);
-                return; // 发送成功则退出
-
-            } catch (Exception e) {
-                attempt++;
-                if (attempt > MAX_RETRIES) {
-                    log.error("邮件最终发送失败，邮箱：{}", email, e);
-                    break;
-                }
-
-                // 指数退避 + 随机抖动
-                long delay = (long) (Math.pow(2, attempt) * 1000); // 2^attempt 毫秒
-                delay += ThreadLocalRandom.current().nextInt(100, 500); // 随机抖动
-
-                try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-        }
+        // 注意：sendEmail() 如果抛出异常，Spring Retry 会自动重试
+        sendEmail(email, subject, content);
     }
+
 
     @Override
     public boolean verifyEmailCode(String email, String code) {
