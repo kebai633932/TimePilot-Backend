@@ -43,8 +43,6 @@ public class UserAuthServiceImpl implements IUserAuthService {
 
     private final IUserRepository userRepository;
     private final IUserRoleRepository userRoleRepository;
-    //todo 用authenticationManager来进行账号密码认证
-    private final AuthenticationManager authenticationManager;
     private final BCryptPasswordEncoder passwordEncoder;
 
     private final RedissonClient redissonClient;

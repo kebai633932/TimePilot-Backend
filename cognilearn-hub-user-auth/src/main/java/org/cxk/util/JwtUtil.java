@@ -4,7 +4,6 @@ import io.jsonwebtoken.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBucket;
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -164,11 +163,10 @@ public class JwtUtil {
     }
 
     public Claims parseToken(String token) {
-        Claims claims = Jwts.parser()
+        return Jwts.parser()
                 .setSigningKey(publicKey)
                 .parseClaimsJws(token)
                 .getBody();
-        return claims;
 
     }
 

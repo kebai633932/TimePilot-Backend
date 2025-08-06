@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @description
  * @create 2025/7/29 8:39
  */
-//todo
 public interface CustomUserDetailsService extends UserDetailsService {
     @Override
     UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;

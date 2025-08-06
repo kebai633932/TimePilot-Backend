@@ -1,10 +1,8 @@
 package org.cxk.trigger.filter;
 
 import io.jsonwebtoken.Claims;
-import org.cxk.service.impl.CustomUserDetailsServiceImpl;
 import org.cxk.trigger.dto.CustomUserDTO;
 import org.cxk.util.JwtUtil;
-import org.redisson.api.RedissonClient;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,9 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Resource
     private JwtUtil jwtUtil;
-
-    @Resource
-    private CustomUserDetailsServiceImpl userDetailsServiceImpl;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain filterChain)

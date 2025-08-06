@@ -17,15 +17,11 @@ import types.response.Response;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static org.cxk.util.JwtUtil.BEARER_PREFIX;
-
-
 /**
  * @author KJH
  * @description
  * @create 2025/5/24 15:27
  */
-//todo
 @Slf4j
 @RestController
 @RequestMapping("/api/user/auth")

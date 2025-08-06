@@ -1,13 +1,11 @@
 package org.cxk.trigger.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.trigger.dto.CustomUserDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
 import org.cxk.trigger.exception.UsernameNotExistsException;
 import org.cxk.util.JwtUtil;
-import org.redisson.api.RedissonClient;
 import org.redisson.client.RedisConnectionException;
 import org.redisson.client.RedisTimeoutException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,9 +35,6 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
     private JwtUtil jwtUtil;
     @Resource
     RedisUserBloomFilter redisUserBloomFilter;
-
-    @Resource
-    RedissonClient redissonClient;
 
     public JwtLoginFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -80,7 +74,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult)
-            throws IOException, ServletException {
+            throws IOException {
         CustomUserDTO customUser = (CustomUserDTO) authResult.getPrincipal();
 
         if (jwtUtil == null) {
@@ -153,7 +147,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                               AuthenticationException e)
-            throws IOException, ServletException {
+            throws IOException {
         Map<String, Object> error = new HashMap<>();
         error.put("code", 401);
         error.put("message", e.getMessage() != null ? e.getMessage() : "用户名或密码错误");

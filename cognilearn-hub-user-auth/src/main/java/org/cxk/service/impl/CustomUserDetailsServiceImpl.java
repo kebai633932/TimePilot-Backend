@@ -14,15 +14,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
+
 /**
  * @author KJH
- * @description
+ * @description 自定义用户详情服务 - 从数据库加载用户信息
  * @create 2025/7/28 16:03
  */
-/**
- * 自定义用户详情服务 - 从数据库加载用户信息
- */
-//todo
 @Service
 public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
 
@@ -46,7 +43,7 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
                 .map(role -> new SimpleGrantedAuthority(role.getCode())) // 比如 "ROLE_ADMIN"
                 .collect(Collectors.toList());
 
-        // 封装成 CustomUserDTO(实现了UserDetails接口) 返回
+        // 封装成 CustomUserDTO(实现了UserDetails接口)  返回
         CustomUserDTO userDetails = new CustomUserDTO();
         userDetails.setId(user.getId());
         userDetails.setUsername(user.getUsername());
