@@ -21,7 +21,7 @@ public interface IUserDao extends BaseMapper<User> {
 
     @Update("UPDATE `user` " +
             "SET is_deleted = 1, " +
-            "del_version = id, -- 直接将主键id赋值给del_version " +
+            "del_version = user_id, -- 直接将主键id赋值给del_version " +
             "update_time = NOW() " +
             "WHERE username = #{username} AND is_deleted = 0")
     int deleteByUsername(String username);

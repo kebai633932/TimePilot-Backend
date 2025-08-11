@@ -18,6 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class RoleEntity {
     private Long id;
+    private Long roleId;
     private String code;
     private String name;
     private String description;

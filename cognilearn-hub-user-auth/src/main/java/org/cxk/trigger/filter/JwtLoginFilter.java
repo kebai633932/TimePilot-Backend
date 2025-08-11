@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.trigger.dto.CustomUserDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
-import org.cxk.trigger.exception.UsernameNotExistsException;
 import org.cxk.util.JwtUtil;
 import org.redisson.client.RedisConnectionException;
 import org.redisson.client.RedisTimeoutException;
@@ -16,6 +15,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import types.exception.BizException;
 
 import javax.annotation.Resource;
 import javax.servlet.FilterChain;
@@ -54,7 +54,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 
             try {
                 if (!redisUserBloomFilter.mightContain(loginDTO.getUsername())) {
-                    throw new UsernameNotExistsException("用户名不存在（布隆过滤器拦截）");
+                    throw new BizException("用户名不存在（布隆过滤器拦截）");
                 }
             } catch (RedisConnectionException | RedisTimeoutException e) {
                 log.error("Redis异常，跳过布隆过滤器校验: {}", e.getMessage());
@@ -100,7 +100,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         SecurityContextHolder.getContext().setAuthentication(authenticationResult);
 
         String username = customUser.getUsername();
-        Long userId = customUser.getId();
+        Long userId = customUser.getUserId();
         List<String> roleList = extractRoles(customUser);
         // 生成JTI和令牌
         String jti = UUID.randomUUID().toString();

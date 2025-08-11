@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtUtil.parseToken(jwt);
                 // 3.1 提取字段
                 String username = claims.getSubject();
-                Long userId = claims.get("uid", Long.class);
+                Long userId = claims.get("userId", Long.class);
                 String deviceId = claims.get("deviceId", String.class);
                 List<String> roleList = extractRoles(claims);
                 // 3.2 校验字段是否缺失

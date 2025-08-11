@@ -35,8 +35,10 @@ public class EmailServiceImpl implements IEmailService {
     private String fromEmail;
 
     // 验证码有效期（分钟）
+    //todo @Value注入
     private static final int CODE_EXPIRY_MINUTES = 10;
     // 最大重试次数
+    //todo @Value注入
     private static final int MAX_RETRIES = 5;
 
     @Override
@@ -138,6 +140,7 @@ public class EmailServiceImpl implements IEmailService {
     /**
      * 获取验证码存储Key
      */
+    //todo redis的模板要统一在一起
     private String getVerificationKey(String email) {
         return "email:code:" + email;
     }

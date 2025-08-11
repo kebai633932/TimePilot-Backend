@@ -25,7 +25,7 @@ public class UserRepository implements IUserRepository {
     private final IUserDao userDao;
 
     public boolean save(UserEntity userEntity) {
-        User user = UserConverter.toPO(userEntity);
+        User user = UserConverter.converter(userEntity);
         return userDao.insert(user) > 0;
     }
 

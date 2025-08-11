@@ -12,9 +12,9 @@ import java.util.Date;
 @Data
 @TableName("`user`") // 注意反引号防止关键字冲突，如表名是其他名称请修改
 public class User {
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
-
+    private Long userId;
     private String username;
     private String password;
     private String email;

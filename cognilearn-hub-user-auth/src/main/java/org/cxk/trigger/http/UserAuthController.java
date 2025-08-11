@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 public class UserAuthController {
 
     private final IUserAuthService userAuthService;
+    //todo 以后的邮箱，手机号等等，map<String,Bean>自动注入
     private final IEmailService emailService;
     private final JwtUtil jwtUtil;
 
@@ -71,8 +72,7 @@ public class UserAuthController {
             if (dto.getVerificationChannelType() == VerificationChannelType.EMAIL) {
                 if(!emailService.verifyEmailCode(dto.getEmail(), dto.getVerificationCode()))
                     return Response.error(ResponseCode.VERIFICATION_CODE_ERROR);
-            }
-            else {
+            } else {
                 return Response.error(ResponseCode.ILLEGAL_PARAMETER, "未知的注册类型");
             }
             // 3. 调用密码重置服务
@@ -121,7 +121,6 @@ public class UserAuthController {
             String accessToken = jwtUtil.parseJwt(request);
             String refreshToken = dto.getRefreshToken();
 
-
             tokenService.logout(accessToken, refreshToken);
 
             return Response.success(true, "登出成功");
@@ -134,19 +133,6 @@ public class UserAuthController {
     //todo  登录后的重置密码
 //    @PostMapping("/reset-password")
 //    public Response<Boolean> resetLoggedInPassword(@RequestBody ResetPasswordDTO dto, Principal principal) {
-//        try {
-//            String username = principal.getName(); // 或 SecurityContextHolder
-//            boolean success = userAuthService.resetPasswordAfterLogin(username, dto);
-//            return success
-//                    ? Response.success(true, "密码修改成功")
-//                    : Response.error(ResponseCode.UN_ERROR, "原密码错误或其他失败");
-//        } catch (Exception e) {
-//            log.error("登录后重置密码失败，用户：{}", principal.getName(), e);
-//            return Response.<Boolean>builder()
-//                    .code(ResponseCode.UN_ERROR.getCode())
-//                    .info("修改密码失败：" + e.getMessage())
-//                    .build();
-//        }
 //    }
 
     // 发送邮箱验证码接口

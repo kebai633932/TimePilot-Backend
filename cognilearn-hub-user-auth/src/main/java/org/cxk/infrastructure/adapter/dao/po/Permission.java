@@ -15,6 +15,7 @@ import java.util.Date;
 @Data
 public class Permission {
     private Long id;
+    private Long permissionId;
     private String code;
     private String name;
     private Integer type; // 1-菜单, 2-按钮, 3-API

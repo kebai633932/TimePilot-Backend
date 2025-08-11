@@ -19,6 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class UserEntity {
     private Long id;
+    private Long userId;
     private String username;
     private String password;
     private String email;

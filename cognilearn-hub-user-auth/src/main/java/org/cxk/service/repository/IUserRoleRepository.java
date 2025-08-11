@@ -16,7 +16,7 @@ public interface IUserRoleRepository {
     // 查询用户的所有角色 ID
     List<Long> findRoleIdsByUserId(@Param("userId") Long userId);
 
-    void deleteByUserId(Long id);
+    void deleteByUserId(Long userId);
 
 
 

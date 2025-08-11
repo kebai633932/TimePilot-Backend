@@ -53,7 +53,7 @@ public class UserAuthServiceImpl implements IUserAuthService {
     public boolean register(UserRegisterDTO dto) {
         String username = dto.getUsername();
         String password = dto.getPassword();
-
+        //todo redis key格式放一起
         String lockKey = "lock:register:" + username;
         RLock lock = redissonClient.getLock(lockKey);
 
@@ -82,7 +82,7 @@ public class UserAuthServiceImpl implements IUserAuthService {
             Long userId = TinyId.nextId("auth_register");
 
             UserEntity user = UserEntity.builder()
-                    .id(userId)
+                    .userId(userId)
                     .username(username)
                     .phone(dto.getPhone())
                     .email(dto.getEmail())
@@ -135,7 +135,7 @@ public class UserAuthServiceImpl implements IUserAuthService {
     public boolean resetPassword(ForgotPasswordResetDTO dto) {
         String username = dto.getUsername();
         String rawPassword = dto.getPassword();
-
+        //todo redis key格式放一块
         String lockKey = "lock:resetPassword:" + username;
         RLock lock = redissonClient.getLock(lockKey);
 
@@ -185,7 +185,7 @@ public class UserAuthServiceImpl implements IUserAuthService {
         return false;
     }
 
-
+    //todo 完成注销动作
     @Override
     public boolean delete(UserDeleteDTO userDeleteDTO) {
         // 删除用户角色关联
@@ -197,7 +197,7 @@ public class UserAuthServiceImpl implements IUserAuthService {
             }
 
             // 删除用户角色关联
-            userRoleRepository.deleteByUserId(user.getId());
+            userRoleRepository.deleteByUserId(user.getUserId());
 
             // 逻辑删除用户
             boolean deleted = userRepository.deleteByUsername(userDeleteDTO.getUsername());

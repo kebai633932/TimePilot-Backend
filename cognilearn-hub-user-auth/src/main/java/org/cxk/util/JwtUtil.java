@@ -15,7 +15,9 @@ import types.exception.BizException;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.*;
@@ -75,21 +77,27 @@ public class JwtUtil {
     }
 
     private PrivateKey loadPrivateKey() throws Exception {
-        String privateKeyPem = readKeyFromClasspath(privateKeyPath);
+        String privateKeyPem = readKey(privateKeyPath);
         return parsePrivateKey(privateKeyPem);
     }
 
     private PublicKey loadPublicKey() throws Exception {
-        String publicKeyPem = readKeyFromClasspath(publicKeyPath);
+        String publicKeyPem = readKey(publicKeyPath);
         return parsePublicKey(publicKeyPem);
     }
 
-    private String readKeyFromClasspath(String path) throws IOException {
+    private String readKey(String path) throws IOException {
+        InputStream is = null;
         if (path.startsWith("classpath:")) {
-            path = path.substring("classpath:".length());
+            String cpPath = path.substring("classpath:".length());
+            ClassPathResource resource = new ClassPathResource(cpPath);
+            is = resource.getInputStream();
+        } else {
+            is = new FileInputStream(path);
         }
-        ClassPathResource resource = new ClassPathResource(path);
-        return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+        try (InputStream input = is) {
+            return StreamUtils.copyToString(input, StandardCharsets.UTF_8);
+        }
     }
 
     private PrivateKey parsePrivateKey(String pemContent) throws Exception {
@@ -140,7 +148,7 @@ public class JwtUtil {
         claims.put(TOKEN_TYPE_CLAIM, tokenType);
         claims.put("roles", roles);
         claims.put("deviceId", deviceId);
-        claims.put("uid", userId);
+        claims.put("userId", userId);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -195,7 +203,7 @@ public class JwtUtil {
             throw new BizException("非法的Refresh Token类型");
         }
 
-        if (claims.get("uid", Long.class) == null ||
+        if (claims.get("userId", Long.class) == null ||
                 claims.get("deviceId", String.class) == null) {
             throw new BizException("缺失必要的Token声明");
         }
@@ -296,7 +304,7 @@ public class JwtUtil {
     public Long getUserIdFromToken(String token) {
         try {
             Claims claims = safeParseToken(token);
-            return claims.get("uid", Long.class);
+            return claims.get("userId", Long.class);
         } catch (BizException e) {
             log.warn("从令牌获取用户ID失败: {}", e.getMessage());
             return null;
@@ -312,6 +320,4 @@ public class JwtUtil {
             return null;
         }
     }
-
-
 }

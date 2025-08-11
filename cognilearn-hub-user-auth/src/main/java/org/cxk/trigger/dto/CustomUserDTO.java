@@ -19,7 +19,7 @@ import java.util.Collection;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomUserDTO  implements UserDetails , Serializable {
-    private Long id;                   // 用户ID，一般用来标识数据库主键
+    private Long userId;              // 用户ID
     private String username;          // 用户名（用于登录）
     private String password;          // 密码（用于登录）
     private String deviceId;  // 新增设备ID字段
@@ -33,7 +33,7 @@ public class CustomUserDTO  implements UserDetails , Serializable {
     private Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserDTO(Long userId, String username, String password, String deviceId,Collection<? extends GrantedAuthority> authorities) {
-        this.id=userId;
+        this.userId=userId;
         this.username=username;
         this.password=password;
         this.deviceId=deviceId;

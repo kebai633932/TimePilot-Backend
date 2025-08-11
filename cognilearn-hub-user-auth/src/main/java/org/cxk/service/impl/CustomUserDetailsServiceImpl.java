@@ -38,14 +38,14 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
             throw new RuntimeException("账号已停用");
         }
         // 权限信息可以从用户角色表中查
-        List<Role> roles = roleRepository.findRolesByUserId(user.getId());
+        List<Role> roles = roleRepository.findRolesByUserId(user.getUserId());
         List<GrantedAuthority> authorities = roles.stream()
                 .map(role -> new SimpleGrantedAuthority(role.getCode())) // 比如 "ROLE_ADMIN"
                 .collect(Collectors.toList());
 
         // 封装成 CustomUserDTO(实现了UserDetails接口)  返回
         CustomUserDTO userDetails = new CustomUserDTO();
-        userDetails.setId(user.getId());
+        userDetails.setUserId(user.getUserId());
         userDetails.setUsername(user.getUsername());
         userDetails.setPassword(user.getPassword());
         userDetails.setAuthorities(authorities); // 赋予权限
