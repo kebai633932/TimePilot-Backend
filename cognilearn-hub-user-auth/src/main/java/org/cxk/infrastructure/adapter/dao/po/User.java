@@ -10,7 +10,7 @@ import java.util.Date;
  * 对应数据库表：user（如果不是，请在@TableName中指定真实表名）
  */
 @Data
-@TableName("`user`") // 注意反引号防止关键字冲突，如表名是其他名称请修改
+@TableName("\"user\"") // 双引号包起来，PostgreSQL 允许
 public class User {
     @TableId(type = IdType.AUTO)
     private Long id;

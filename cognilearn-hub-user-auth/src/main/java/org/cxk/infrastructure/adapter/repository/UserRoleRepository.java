@@ -43,7 +43,7 @@ public class UserRoleRepository implements IUserRoleRepository {
         return userRoleDao.selectList(
                 new LambdaQueryWrapper<UserRole>()
                         .eq(UserRole::getUserId, userId)
-                        .eq(UserRole::getIsDeleted, false) // 逻辑未删除
+//                        .eq(UserRole::getIsDeleted, false) // 逻辑未删除
         ).stream().map(UserRole::getRoleId).collect(Collectors.toList());
     }
 

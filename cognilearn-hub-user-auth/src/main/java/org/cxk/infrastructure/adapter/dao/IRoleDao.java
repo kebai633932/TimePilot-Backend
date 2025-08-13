@@ -17,6 +17,6 @@ public interface IRoleDao extends BaseMapper<Role> {
 
     @Select("SELECT r.* FROM role r " +
             "JOIN user_role ur ON r.role_id = ur.role_id " +
-            "WHERE ur.user_id = #{userId} AND r.is_deleted = 0")
+            "WHERE ur.user_id = #{userId} AND r.is_deleted = false")
     List<Role> findByUserId(Long userId);
 }

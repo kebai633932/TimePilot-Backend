@@ -31,7 +31,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint unauthorizedHandler;
     private final CustomAccessDeniedHandler accessDeniedHandler;
-    private final JwtUtil jwtUtil; // 你需要注入JwtUtil
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService,
                           JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -42,7 +41,6 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.unauthorizedHandler = unauthorizedHandler;
         this.accessDeniedHandler = accessDeniedHandler;
-        this.jwtUtil = jwtUtil;
     }
 
     @Bean
@@ -65,7 +63,6 @@ public class SecurityConfig {
     public JwtLoginFilter jwtLoginFilter(AuthenticationManager authenticationManager) {
         JwtLoginFilter filter = new JwtLoginFilter(authenticationManager);
         filter.setAuthenticationManager(authenticationManager);
-//        filter.setJwtUtil(jwtUtil); // 注入 JwtUtil
         filter.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/user/auth/login", "POST"));
         return filter;
     }

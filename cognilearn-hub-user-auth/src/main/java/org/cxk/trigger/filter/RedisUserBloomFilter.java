@@ -37,7 +37,7 @@ public class RedisUserBloomFilter {
         }
 
         // 加载已有用户（从数据库） 填充布隆过滤器
-         List<String> usernames = userRepository.getAllUsernames();
+         List<String> usernames = userRepository.findAllUsernames();
          usernames.forEach(bloomFilter::add);
     }
 

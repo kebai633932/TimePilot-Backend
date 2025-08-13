@@ -21,7 +21,7 @@ public interface IUserRoleDao  extends BaseMapper<UserRole> {
     @Update("UPDATE user_role " +
             "SET is_deleted = 1, " +
             "update_time = NOW() " +
-            "WHERE user_id = #{userId} AND is_deleted = 0")
+            "WHERE user_id = #{userId} AND is_deleted = false")
     int deleteByUserId(@Param("userId") Long userId);
 
 

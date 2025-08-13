@@ -12,30 +12,33 @@ import java.util.List;
 @Mapper
 public interface IUserDao extends BaseMapper<User> {
 
-    @Select("SELECT * FROM `user` WHERE username = #{username} AND is_deleted = 0")
+    @Select("SELECT * FROM \"user\" WHERE username = #{username} AND is_deleted = false")
     User findByUsername(String username);
 
     // 如果不额外条件，可以不写此方法，用BaseMapper.selectList(null)
-    @Select("SELECT * FROM `user` WHERE is_deleted = 0")
+    @Select("SELECT * FROM \"user\" WHERE is_deleted = false")
     List<User> findAll();
 
-    @Update("UPDATE `user` " +
+    @Select("SELECT username FROM \"user\" WHERE is_deleted = false")
+    List<String> findAllUsernames();
+
+    @Update("UPDATE \"user\" " +
             "SET is_deleted = 1, " +
             "del_version = user_id, -- 直接将主键id赋值给del_version " +
             "update_time = NOW() " +
-            "WHERE username = #{username} AND is_deleted = 0")
+            "WHERE username = #{username} AND is_deleted = false")
     int deleteByUsername(String username);
 
 
     // 查询拥有该邮箱的用户数量
-    @Select("SELECT COUNT(*) FROM `user` WHERE email = #{email} AND is_deleted = 0")
+    @Select("SELECT COUNT(*) FROM \"user\" WHERE email = #{email} AND is_deleted = false")
     int countByEmail(@Param("email") String email);
 
     // 查询拥有该手机号的用户数量
-    @Select("SELECT COUNT(*) FROM `user` WHERE phone = #{phone} AND is_deleted = 0")
+    @Select("SELECT COUNT(*) FROM \"user\" WHERE phone = #{phone} AND is_deleted = false")
     int countByPhone(@Param("phone") String phone);
-    @Update("UPDATE `user` " +
+    @Update("UPDATE \"user\" " +
             "SET password = #{encodedPassword}  " +
-            "WHERE username = #{username} AND is_deleted = 0")
+            "WHERE username = #{username} AND is_deleted = false")
     int updatePasswordByUsername(String username, String encodedPassword);
 }

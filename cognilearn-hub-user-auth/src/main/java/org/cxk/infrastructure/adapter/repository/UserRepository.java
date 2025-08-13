@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 /**
  * @author KJH
  * @description
@@ -29,24 +28,11 @@ public class UserRepository implements IUserRepository {
         return userDao.insert(user) > 0;
     }
 
-    public List<String> getAllUsernames() {
-        return userDao.selectList(
-                new LambdaQueryWrapper<User>().select(User::getUsername)
-        ).stream().map(User::getUsername).collect(Collectors.toList());
-    }
-
-    public User findByUsername(String username) {
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, username);
-        wrapper.eq(User::getIsDeleted, false); // 增加逻辑删除条件
-        return userDao.selectOne(wrapper);
-    }
-
     @Override
     public List<User> findAll() {
         return userDao.selectList(
                 new LambdaQueryWrapper<User>()
-                        .eq(User::getIsDeleted, false)
+//                        .eq(User::getIsDeleted, false)
         );
     }
 
@@ -73,5 +59,15 @@ public class UserRepository implements IUserRepository {
     @Override
     public int updatePasswordByUsername(String username, String encodedPassword) {
         return userDao.updatePasswordByUsername(username,encodedPassword);
+    }
+    public User findByUsername(String username) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, username);
+//        wrapper.eq(User::getIsDeleted, false); // 增加逻辑删除条件
+        return userDao.selectOne(wrapper);
+    }
+    @Override
+    public List<String> findAllUsernames() {
+        return userDao.findAllUsernames();
     }
 }
