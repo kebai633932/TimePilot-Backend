@@ -18,6 +18,7 @@ public class Role implements Serializable {
 
     @TableId(type = IdType.AUTO)
     private Long id;
+    //todo 这里的crud都没做
     private Long roleId;
     private String code;
 

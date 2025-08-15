@@ -118,10 +118,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <version>8.0.22</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>

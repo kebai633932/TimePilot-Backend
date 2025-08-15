@@ -23,6 +23,7 @@ public enum ResponseCode {
 
     // 业务错误码，建议以 ERR_BIZ_ 开头
     VERIFICATION_CODE_ERROR("ERR_BIZ_001", "验证码不匹配,输入错误"),
+    UN_AUTHORIZED("ERR_BIZ_002","无权限修改该文件夹" );
 
     // 配置错误码,以ERR_CONFIG_
 
@@ -35,7 +36,7 @@ public enum ResponseCode {
     EMAIL_SEND_ERROR("ERR_SERVICE_001", "邮件发送失败"),
 
 
-    ;
+
 
     private final String code;
     private final String info;
