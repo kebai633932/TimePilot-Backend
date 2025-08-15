@@ -17,6 +17,7 @@ import types.exception.BizException;
 import javax.annotation.Resource;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +75,7 @@ public class EmailServiceImpl implements IEmailService {
         try {
             // 直接设置Redis值，不使用超时控制
             RBucket<String> bucket = redissonClient.getBucket(redisKey);
-            bucket.set(code, expirySeconds, TimeUnit.SECONDS);
+            bucket.set(code,Duration.ofSeconds(expirySeconds)); // 推荐
             log.debug("验证码存储成功，邮箱：{}，有效期：{}秒", email, expirySeconds);
 
             // 3. 异步发送邮件（带指数退避重试）

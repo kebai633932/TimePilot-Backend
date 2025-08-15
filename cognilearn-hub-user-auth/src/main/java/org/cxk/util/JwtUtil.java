@@ -15,12 +15,14 @@ import types.exception.BizException;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.*;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -87,13 +89,13 @@ public class JwtUtil {
     }
 
     private String readKey(String path) throws IOException {
-        InputStream is = null;
+        InputStream is;
         if (path.startsWith("classpath:")) {
             String cpPath = path.substring("classpath:".length());
             ClassPathResource resource = new ClassPathResource(cpPath);
             is = resource.getInputStream();
         } else {
-            is = new FileInputStream(path);
+            is = Files.newInputStream(Paths.get(path));
         }
         try (InputStream input = is) {
             return StreamUtils.copyToString(input, StandardCharsets.UTF_8);
@@ -226,14 +228,14 @@ public class JwtUtil {
             // 格式错误令牌短期黑名单，
             // 防止恶意攻击者尝试伪造 Token 刷接口，每次都消耗 CPU 做签名验证。用 Redis 缓存拦下来，减少资源浪费
             RBucket<String> bucket = redissonClient.getBucket("jwt:invalid:" + token);
-            bucket.set("revoked", 1, TimeUnit.MINUTES);
+            bucket.set("revoked", Duration.ofMinutes(1)); // 推荐
         }
     }
 
     private void addToBlacklist(Claims claims, long ttlMillis) {
         String jti = claims.getId();
         RBucket<String> bucket = redissonClient.getBucket(REDIS_JWT_BLACKLIST_PREFIX + jti);
-        bucket.set("revoked", ttlMillis, TimeUnit.MILLISECONDS);
+        bucket.set("revoked", Duration.ofMinutes(ttlMillis)); // 推荐
         log.debug("令牌加入黑名单: jti={}, ttl={}ms", jti, ttlMillis);
     }
 
@@ -247,7 +249,7 @@ public class JwtUtil {
         try {
             String key = getJtiKey(userId, deviceId);
             long ttl = TimeUnit.DAYS.toMillis(refreshTokenExpirationDays);
-            redissonClient.getBucket(key).set(jti, ttl, TimeUnit.MILLISECONDS);
+            redissonClient.getBucket(key).set(jti,Duration.ofMillis(ttl));
             log.debug("保存刷新令牌JTI: userId={}, deviceId={}, jti={}", userId, deviceId, jti);
         } catch (Exception e) {
             log.error("保存刷新令牌JTI失败", e);
