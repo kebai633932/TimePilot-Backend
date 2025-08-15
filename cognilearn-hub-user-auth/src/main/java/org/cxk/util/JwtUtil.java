@@ -177,10 +177,26 @@ public class JwtUtil {
                 .setSigningKey(publicKey)
                 .parseClaimsJws(token)
                 .getBody();
-
+    }
+    /**
+     * 安全解析令牌，即使过期也能取出 claims
+     */
+    public Claims safeParseTokenAllowExpired(String token) {
+        try {
+            return parseToken(token);
+        } catch (ExpiredJwtException e) {
+            // 直接用 e.getClaims() 获取过期令牌的 claims
+            log.warn("令牌已过期");
+            return e.getClaims();
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new BizException("无效令牌: " + e.getMessage());
+        }
     }
 
-    public Claims safeParseToken(String token) {
+    /**
+     * 安全解析令牌，过期直接抛错
+     */
+    public Claims safeParseTokenStrict(String token) {
         try {
             return parseToken(token);
         } catch (ExpiredJwtException e) {
@@ -189,6 +205,7 @@ public class JwtUtil {
             throw new BizException("无效令牌: " + e.getMessage());
         }
     }
+
 
     public boolean validateToken(String token) {
         try {
@@ -305,7 +322,7 @@ public class JwtUtil {
     // ====================== 辅助方法 ======================
     public Long getUserIdFromToken(String token) {
         try {
-            Claims claims = safeParseToken(token);
+            Claims claims = safeParseTokenStrict(token);
             return claims.get("userId", Long.class);
         } catch (BizException e) {
             log.warn("从令牌获取用户ID失败: {}", e.getMessage());
@@ -315,7 +332,7 @@ public class JwtUtil {
 
     public String getDeviceIdFromToken(String token) {
         try {
-            Claims claims = safeParseToken(token);
+            Claims claims = safeParseTokenStrict(token);
             return claims.get("deviceId", String.class);
         } catch (BizException e) {
             log.warn("从令牌获取设备ID失败: {}", e.getMessage());

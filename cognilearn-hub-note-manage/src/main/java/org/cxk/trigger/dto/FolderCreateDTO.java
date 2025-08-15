@@ -14,5 +14,6 @@ public class FolderCreateDTO {
     @NotNull(message = "文件夹名称不能为空")
     private String name;
     @NotNull(message = "父文件夹ID不能为空")
+    //todo 为空还是为0  现在是都为顶级  后续改为0
     private Long parentId; // 可为空，表示顶级文件夹
 }

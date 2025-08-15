@@ -67,7 +67,7 @@ public class FolderController {
                 return Response.error(ResponseCode.UN_ERROR, "创建失败");
             }
             // 更新数据库
-            folderService.updateFolder(userId, dto.getName(), dto.getFolderId(), dto.getParentId());
+            folderService.updateFolder(userId, dto.getName(), dto.getFolderId(), dto.getNewParentId());
 
             return Response.success(true, "修改文件夹成功");
         } catch (Exception e) {

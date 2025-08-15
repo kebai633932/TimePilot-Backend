@@ -17,5 +17,5 @@ public class FolderUpdateDTO {
     @Size(max = 255, message = "文件夹名称不能超过255个字符")
     private String name; // 可修改名称
     @NotNull(message = "父文件夹ID不能为空")
-    private Long parentId; // 可修改上级文件夹
+    private Long newParentId; // 可修改上级文件夹
 }

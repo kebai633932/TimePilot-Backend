@@ -73,6 +73,7 @@ public class FolderServiceImpl implements IFolderService {
                 folder.setUserId(userId);
                 folder.setName(name);
                 folder.setParentId(parentId);
+
                 folderRepository.save(folder);
 
                 // 4. 注册事务提交后的回调，清理缓存

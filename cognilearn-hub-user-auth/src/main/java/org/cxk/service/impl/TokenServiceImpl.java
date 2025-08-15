@@ -38,11 +38,11 @@ public class TokenServiceImpl implements ITokenService {
     @Override
     public TokenPairDTO refreshToken(String refreshToken, String currentAccessToken) {
         // 1. 安全解析刷新令牌
-        Claims refreshClaims = jwtUtil.safeParseToken(refreshToken);
+        Claims refreshClaims = jwtUtil.safeParseTokenStrict(refreshToken);
         jwtUtil.validateRefreshTokenClaims(refreshClaims);
 
-        // 2. 解析当前访问令牌（用于设备ID和用户ID）
-        Claims accessClaims = jwtUtil.safeParseToken(currentAccessToken);
+        // 2. 解析当前访问令牌（用于设备ID和用户ID），这里不需要抛出ExpiredJwtException
+        Claims accessClaims = jwtUtil.safeParseTokenAllowExpired(currentAccessToken);
 
         // 3. 验证设备绑定和用户一致性
         validateTokenConsistency(refreshClaims, accessClaims);
@@ -117,8 +117,8 @@ public class TokenServiceImpl implements ITokenService {
     public void logout(String accessToken, String refreshToken) {
         try {
             // 1. 安全解析令牌
-            Claims accessClaims = jwtUtil.safeParseToken(accessToken);
-            Claims refreshClaims = jwtUtil.safeParseToken(refreshToken);
+            Claims accessClaims = jwtUtil.safeParseTokenStrict(accessToken);
+            Claims refreshClaims = jwtUtil.safeParseTokenStrict(refreshToken);
 
             // 2. 验证令牌一致性
             validateTokenConsistency(accessClaims, refreshClaims);

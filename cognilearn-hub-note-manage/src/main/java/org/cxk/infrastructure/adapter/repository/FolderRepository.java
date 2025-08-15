@@ -36,7 +36,7 @@ public class FolderRepository implements IFolderRepository {
 
     @Override
     public void save(Folder folder) {
-        if (folder.getFolderId() == null) {
+        if (folder.getId() == null) {
             folderDao.insert(folder);
         } else {
             folderDao.updateById(folder);

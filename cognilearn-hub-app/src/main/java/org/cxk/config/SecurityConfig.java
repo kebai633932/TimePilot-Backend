@@ -84,7 +84,7 @@ public class SecurityConfig {
                         "/api/user/auth/register",
                         "/api/user/auth/sendEmailCode",
                         "/api/user/auth/forgot-password/reset",
-                        "/api/user/refresh-token",
+                        "/api/user/auth/refresh-token",
                         "/api/public/**"
                 ).permitAll()
                 .anyRequest().authenticated()

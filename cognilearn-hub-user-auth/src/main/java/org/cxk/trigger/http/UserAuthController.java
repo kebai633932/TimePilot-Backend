@@ -107,6 +107,7 @@ public class UserAuthController {
 
             return Response.success(tokenPair, "刷新成功");
         } catch (BizException e) {
+            log.error("刷新令牌异常："+e.getMessage());
             return Response.error(ResponseCode.UN_ERROR, e.getMessage());
         } catch (Exception e) {
             log.error("刷新异常", e);
