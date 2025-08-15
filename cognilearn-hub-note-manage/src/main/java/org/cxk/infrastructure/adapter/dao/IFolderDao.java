@@ -23,12 +23,10 @@ public interface IFolderDao extends BaseMapper<Folder> {
     /**
      * 逻辑删除文件夹
      * 1. 将 is_deleted 标记为 true
-     * 2. 记录删除时间 deleted_at
+     * 2. 记录删除时间 delete_time
      */
-    @Update(
-            "UPDATE folder " +
-                    "SET is_deleted = true, delete_time = NOW() " +
-                    "WHERE folder_id = #{folderId} AND is_deleted = false"
+    @Update("UPDATE folder SET is_deleted = true, delete_time = CURRENT_TIMESTAMP " +
+                    "WHERE folder_id = #{folderId} AND is_deleted = false "
     )
     void deleteByFolderId(Long folderId);
 }

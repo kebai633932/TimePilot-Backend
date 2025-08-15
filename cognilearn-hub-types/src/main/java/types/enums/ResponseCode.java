@@ -23,7 +23,7 @@ public enum ResponseCode {
 
     // 业务错误码，建议以 ERR_BIZ_ 开头
     VERIFICATION_CODE_ERROR("ERR_BIZ_001", "验证码不匹配,输入错误"),
-    UN_AUTHORIZED("ERR_BIZ_002","无权限修改该文件夹" );
+    UN_AUTHORIZED("ERR_BIZ_002","无权限修改该文件夹" ),
 
     // 配置错误码,以ERR_CONFIG_
 
@@ -33,7 +33,7 @@ public enum ResponseCode {
     MQ_SEND_FAILED("ERR_MIDDLE_003", "消息发送失败"),
     LOCAL_CACHE_FAIL("ERR_MIDDLE_004", "本地缓存读取失败"),
     // 服务类错误码 ERR_SERVICE_
-    EMAIL_SEND_ERROR("ERR_SERVICE_001", "邮件发送失败"),
+    EMAIL_SEND_ERROR("ERR_SERVICE_001", "邮件发送失败");
 
 
 
