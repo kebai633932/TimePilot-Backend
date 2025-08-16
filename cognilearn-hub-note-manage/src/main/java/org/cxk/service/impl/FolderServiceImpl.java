@@ -14,6 +14,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate;
 import types.exception.BizException;
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +45,7 @@ public class FolderServiceImpl implements IFolderService {
     /** 锁自动释放时间（秒），避免宕机导致死锁 */
     private static final int LOCK_LEASE = 10;
     /** 最大文件夹树高 */
-    private static final int MAX_TREE_DEPTH = 3;
+    private static final int MAX_TREE_DEPTH = 5;
 
     @Override
     public Long createFolder(Long userId, String name, Long parentId) {
@@ -107,7 +109,31 @@ public class FolderServiceImpl implements IFolderService {
             }
         }
     }
+    /**
+     * 验证文件夹树高（防止超过 MAX_TREE_DEPTH），用于创建
+     */
+    private void validateTreeDepth(Long userId, Long parentId) {
+        if (parentId == null || parentId == 0) return;
 
+        int depth = 1;
+        Long currentFolderId = parentId;
+
+        while (currentFolderId != null && currentFolderId != 0) {
+            depth++;
+            if (depth > MAX_TREE_DEPTH) {
+                throw new BizException("文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
+            }
+
+            Folder parent = folderRepository.findByFolderId(currentFolderId)
+                    .orElseThrow(() -> new BizException("父文件夹不存在"));
+
+            if (!userId.equals(parent.getUserId())) {
+                throw new BizException("父文件夹不属于当前用户");
+            }
+
+            currentFolderId = parent.getParentId();
+        }
+    }
     @Override
     public void updateFolder(Long userId, String name, Long folderId, Long newParentId) {
         String lockKey = buildUserFolderLockKey(userId);
@@ -134,7 +160,7 @@ public class FolderServiceImpl implements IFolderService {
 
                 // 3. 如果父节点有变化
                 if (parentChanged) {
-                    validateTreeDepth(userId, newParentId);
+                    validateBidirectionalTreeDepth(userId,folderId, newParentId);
                     preventCircularDependency(folderId, newParentId);
                     folder.setParentId(newParentId);
                 }
@@ -182,6 +208,87 @@ public class FolderServiceImpl implements IFolderService {
         }
     }
 
+    /**
+     * 验证文件夹树高（防止超过 MAX_TREE_DEPTH），用于修改
+     * 文件夹树高是上下一起算
+     */
+    private void validateBidirectionalTreeDepth(Long userId, Long folderId, Long newParentId) {
+        if (newParentId == null || newParentId == 0) return;
+
+        // 1. 向上计算父链高度
+        int upDepth = 1; // 从 newParentId 开始
+        Long currentFolderId = newParentId;
+        while (currentFolderId != null && currentFolderId != 0) {
+            upDepth++;
+            if (upDepth > MAX_TREE_DEPTH) {
+                throw new BizException("移动后文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
+            }
+
+            Folder parent = folderRepository.findByFolderId(currentFolderId)
+                    .orElseThrow(() -> new BizException("父文件夹不存在"));
+
+            if (!userId.equals(parent.getUserId())) {
+                throw new BizException("父文件夹不属于当前用户");
+            }
+            currentFolderId = parent.getParentId();
+        }
+
+        // 2. 向下计算当前 folder 的最大子树深度
+        int downDepth = getSubtreeMaxDepth(folderId);
+
+        // 3. 合并高度（减 1 避免重复计算当前 folder）
+        int totalDepth = upDepth + downDepth - 1;
+        if (totalDepth > MAX_TREE_DEPTH) {
+            throw new BizException("移动后文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
+        }
+    }
+    /**
+     * 获取某个文件夹的最大子树深度（bfs）
+     */
+    private int getSubtreeMaxDepth(Long rootId) {
+        if(rootId==null){
+            throw new BizException("无该文件夹id");
+        }
+        List<Long> currentLevel = Collections.singletonList(rootId);
+        int depth = 0;
+
+        while (!currentLevel.isEmpty()) {
+            depth++; // 当前层计数
+            currentLevel = folderRepository.findByParentIdList(currentLevel); // 获取下一层节点
+            // 深度限制，提前退出
+            if (depth > MAX_TREE_DEPTH) {
+                throw new BizException("文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
+            }
+        }
+
+        return depth;
+    }
+
+    /**
+     * 防止移动文件夹形成循环依赖
+     */
+    private void preventCircularDependency(Long folderId, Long newParentId) {
+        if (folderId.equals(newParentId)) {
+            throw new BizException("不能将文件夹移动到自身");
+        }
+
+        Long currentId = newParentId;
+        int depth = 1;
+        while (currentId != null && currentId != 0) {
+            if (currentId.equals(folderId)) {
+                throw new BizException("不能将文件夹移动到自己的子文件夹");
+            }
+            // 深度限制，提前退出
+            if (depth > MAX_TREE_DEPTH) {
+                throw new BizException("文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
+            }
+            Folder parent = folderRepository.findByFolderId(currentId)
+                    .orElseThrow(() -> new BizException("父文件夹不存在"));
+
+            currentId = parent.getParentId();
+            depth++;
+        }
+    }
 
     @Override
     public void deleteFolder(Long userId, Long folderId) {
@@ -199,6 +306,7 @@ public class FolderServiceImpl implements IFolderService {
                         .orElseThrow(() -> new BizException("文件夹不存在或权限不足"));
 
                 // 2. 检查是否为空文件夹
+                //todo noteRepository 也要判断
                 if (folderRepository.countByParentId(folderId) > 0) {
                     throw new BizException("文件夹非空，无法删除");
                 }
@@ -236,57 +344,7 @@ public class FolderServiceImpl implements IFolderService {
         }
     }
 
-    /**
-     * 验证文件夹树高（防止超过 MAX_TREE_DEPTH）
-     */
-    private void validateTreeDepth(Long userId, Long parentId) {
-        if (parentId == null || parentId == 0) return;
 
-        int depth = 1;
-        Long currentFolderId = parentId;
-
-        while (currentFolderId != null && currentFolderId != 0) {
-            depth++;
-            if (depth > MAX_TREE_DEPTH) {
-                throw new BizException("文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
-            }
-
-            Folder parent = folderRepository.findByFolderId(currentFolderId)
-                    .orElseThrow(() -> new BizException("父文件夹不存在"));
-
-            if (!userId.equals(parent.getUserId())) {
-                throw new BizException("父文件夹不属于当前用户");
-            }
-
-            currentFolderId = parent.getParentId();
-        }
-    }
-
-    /**
-     * 防止移动文件夹形成循环依赖
-     */
-    private void preventCircularDependency(Long folderId, Long newParentId) {
-        if (folderId.equals(newParentId)) {
-            throw new BizException("不能将文件夹移动到自身");
-        }
-
-        Long currentId = newParentId;
-        int depth = 1;
-        while (currentId != null && currentId != 0) {
-            if (currentId.equals(folderId)) {
-                throw new BizException("不能将文件夹移动到自己的子文件夹");
-            }
-            // 深度限制，提前退出
-            if (depth > MAX_TREE_DEPTH) {
-                throw new BizException("文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
-            }
-            Folder parent = folderRepository.findByFolderId(currentId)
-                    .orElseThrow(() -> new BizException("父文件夹不存在"));
-
-            currentId = parent.getParentId();
-            depth++;
-        }
-    }
 
     /** 删除用户的文件夹列表缓存（存在才删除） */
     private void clearUserFolderListCache(Long userId) {

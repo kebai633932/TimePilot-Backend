@@ -2,6 +2,7 @@ package org.cxk.service.repository;
 
 import org.cxk.infrastructure.adapter.dao.po.Folder;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,4 +22,6 @@ public interface IFolderRepository {
     void delete(Folder folder);
 
     <T> Optional<T> findByFolderIdAndUserId(Long folderId, Long userId);
+
+    List<Long> findByParentIdList(List<Long> currentLevel);
 }

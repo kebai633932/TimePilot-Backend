@@ -48,7 +48,7 @@ public class TokenServiceImpl implements ITokenService {
         validateTokenConsistency(refreshClaims, accessClaims);
 
         // 4. 获取分布式锁（用户ID+设备ID）
-        Long userId = refreshClaims.get("userid", Long.class);
+        Long userId = refreshClaims.get("userId", Long.class);
         String deviceId = refreshClaims.get("deviceId", String.class);
         String lockKey = "refresh_lock:" + userId + ":" + deviceId;
         RLock lock = redissonClient.getLock(lockKey);
@@ -146,10 +146,11 @@ public class TokenServiceImpl implements ITokenService {
 
     /**
      * 验证两个令牌的一致性（用户ID和设备ID）
+     * //TODO 硬编程修改
      */
     private void validateTokenConsistency(Claims claims1, Claims claims2) {
-        Long uid1 = claims1.get("userid", Long.class);
-        Long uid2 = claims2.get("userid", Long.class);
+        Long uid1 = claims1.get("userId", Long.class);
+        Long uid2 = claims2.get("userId", Long.class);
         String deviceId1 = claims1.get("deviceId", String.class);
         String deviceId2 = claims2.get("deviceId", String.class);
 

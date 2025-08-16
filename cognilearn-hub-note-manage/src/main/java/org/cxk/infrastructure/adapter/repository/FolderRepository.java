@@ -6,7 +6,12 @@ import org.cxk.infrastructure.adapter.dao.IFolderDao;
 import org.cxk.infrastructure.adapter.dao.po.Folder;
 import org.cxk.service.repository.IFolderRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author KJH
@@ -54,6 +59,24 @@ public class FolderRepository implements IFolderRepository {
     public void delete(Folder folder) {
         folderDao.deleteByFolderId(folder.getFolderId());
     }
+
+    @Override
+    public List<Long> findByParentIdList(List<Long> parentIds) {
+        if (parentIds == null || parentIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        LambdaQueryWrapper<Folder> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Folder::getParentId, parentIds)
+                .select(Folder::getFolderId); // 只查询 id 提高效率
+
+        return folderDao.selectList(wrapper)
+                .stream()
+                .map(Folder::getFolderId)
+                .filter(Objects::nonNull) // 避免 null
+                .collect(Collectors.toList()); // JDK 16+，低版本可用 collect(Collectors.toList())
+    }
+
 
     @Override
     public Optional<Folder> findByFolderIdAndUserId(Long folderId, Long userId) {
