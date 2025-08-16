@@ -38,10 +38,6 @@ public class FolderController {
     public Response<Long> createFolder(@RequestBody FolderCreateDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
-            if(userId==null){
-                log.error("没有对应的认证用户");
-                return Response.error(ResponseCode.UN_ERROR, "创建失败");
-            }
             Long folderId = folderService.createFolder(userId,dto.getName(), dto.getParentId());
             return Response.success(folderId, "文件夹创建成功");
         } catch (Exception e) {
@@ -62,10 +58,6 @@ public class FolderController {
         try {
             // 拿到线程当前userId
             Long userId = AuthenticationUtil.getCurrentUserId();
-            if(userId==null){
-                log.error("没有对应的认证用户");
-                return Response.error(ResponseCode.UN_ERROR, "创建失败");
-            }
             // 更新数据库
             folderService.updateFolder(userId, dto.getName(), dto.getFolderId(), dto.getNewParentId());
 
@@ -87,10 +79,7 @@ public class FolderController {
     public Response<Boolean> deleteFolder(@RequestBody FolderDeleteDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
-            if(userId==null){
-                log.error("没有对应的认证用户");
-                return Response.error(ResponseCode.UN_ERROR, "创建失败");
-            }
+
             folderService.deleteFolder(userId,dto.getFolderId());
             return Response.success(true, "删除成功");
         } catch (Exception e) {

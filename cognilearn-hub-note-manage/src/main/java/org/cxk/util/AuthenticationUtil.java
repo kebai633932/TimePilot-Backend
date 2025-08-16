@@ -3,6 +3,7 @@ package org.cxk.util;
 import org.cxk.trigger.dto.CustomUserDTO;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import types.exception.BizException;
 
 /**
  * @author KJH
@@ -13,7 +14,7 @@ public class AuthenticationUtil {
     public static Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            return null; // 未认证
+            throw new BizException("无认证用户");
         }
 
         Object principal = auth.getPrincipal();
@@ -23,9 +24,9 @@ public class AuthenticationUtil {
 
         // 如果是匿名用户
         if ("anonymousUser".equals(principal)) {
-            return null;
+            throw new BizException("无认证用户");
         }
 
-        return null; // 其它情况
+        throw new BizException("无认证用户");
     }
 }
