@@ -1,7 +1,7 @@
 package org.cxk.infrastructure.adapter.dao.converter;
 
 import org.cxk.infrastructure.adapter.dao.po.User;
-import org.cxk.model.entity.UserEntity;
+import org.cxk.domain.model.entity.UserEntity;
 
 /**
  * @author KJH

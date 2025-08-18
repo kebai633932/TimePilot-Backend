@@ -1,0 +1,27 @@
+package org.cxk.domain.repository;
+
+import org.cxk.infrastructure.adapter.dao.po.User;
+import org.cxk.domain.model.entity.UserEntity;
+
+import java.util.List;
+
+/**
+ * @author KJH
+ * @description
+ * @create 2025/6/8 16:36
+ */
+public interface IUserRepository {
+
+    public boolean save(UserEntity userEntity);
+
+    public User findByUsername(String username);
+    public List<User> findAll();
+    public boolean deleteByUsername(String username);
+
+    int countByEmail(String email);
+    int countByPhone(String phone);
+
+    int updatePasswordByUsername(String username, String encodedPassword);
+
+    List<String> findAllUsernames();
+}

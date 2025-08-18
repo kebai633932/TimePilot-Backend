@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import org.cxk.infrastructure.adapter.dao.IFolderDao;
 import org.cxk.infrastructure.adapter.dao.po.Folder;
-import org.cxk.service.repository.IFolderRepository;
+import org.cxk.domain.repository.IFolderRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;

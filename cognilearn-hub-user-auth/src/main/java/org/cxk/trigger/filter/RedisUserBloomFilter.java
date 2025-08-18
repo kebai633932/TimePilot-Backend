@@ -1,6 +1,6 @@
 package org.cxk.trigger.filter;
 
-import org.cxk.service.repository.IUserRepository;
+import org.cxk.domain.repository.IUserRepository;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;

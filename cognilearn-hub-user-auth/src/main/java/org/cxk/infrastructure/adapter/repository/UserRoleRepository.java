@@ -2,12 +2,9 @@ package org.cxk.infrastructure.adapter.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
-import org.cxk.infrastructure.adapter.dao.IUserDao;
 import org.cxk.infrastructure.adapter.dao.IUserRoleDao;
-import org.cxk.infrastructure.adapter.dao.po.User;
 import org.cxk.infrastructure.adapter.dao.po.UserRole;
-import org.cxk.service.repository.IUserRepository;
-import org.cxk.service.repository.IUserRoleRepository;
+import org.cxk.domain.repository.IUserRoleRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,6 +17,7 @@ import java.util.stream.Collectors;
  */
 @Repository
 @AllArgsConstructor
+//todo ddd解耦
 public class UserRoleRepository implements IUserRoleRepository {
 
     private final IUserRoleDao userRoleDao;
