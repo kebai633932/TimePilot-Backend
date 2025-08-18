@@ -1,5 +1,6 @@
 package org.cxk.domain.repository;
 
+import org.cxk.domain.model.entity.FolderEntity;
 import org.cxk.infrastructure.adapter.dao.po.Folder;
 
 import java.util.List;
@@ -13,15 +14,15 @@ import java.util.Optional;
 public interface IFolderRepository {
     boolean existsByUserIdAndParentIdAndName(Long userId, Long parentId, String name);
 
-    Optional<Folder> findByFolderId(Long folderId);
+    Optional<FolderEntity> findByFolderId(Long folderId);
 
-    void save(Folder folder);
+    void save(FolderEntity folderEntity);
 
     int countByParentId(Long folderId);
 
-    void delete(Folder folder);
+    void delete(FolderEntity folderEntity);
 
-    <T> Optional<T> findByFolderIdAndUserId(Long folderId, Long userId);
+    Optional<FolderEntity> findByFolderIdAndUserId(Long folderId, Long userId);
 
     List<Long> findByParentIdList(List<Long> currentLevel);
 }

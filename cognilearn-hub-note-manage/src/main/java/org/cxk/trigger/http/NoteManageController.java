@@ -98,7 +98,7 @@ public class NoteManageController implements INoteManageService {
     }
 
     /**
-     * 搜索笔记（全文/向量搜索）
+     * 搜索笔记（全文搜索）
      */
     @PostMapping("/search")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")

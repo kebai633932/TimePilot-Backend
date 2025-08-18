@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.cxk.infrastructure.adapter.dao.po.Folder;
+import org.cxk.infrastructure.adapter.dao.po.Note;
 
 /**
  * @author KJH
@@ -12,6 +13,6 @@ import org.cxk.infrastructure.adapter.dao.po.Folder;
  * @create 2025/8/16 19:29
  */
 @Mapper
-public interface INoteDao {
+public interface INoteDao  extends BaseMapper<Note> {
 
 }

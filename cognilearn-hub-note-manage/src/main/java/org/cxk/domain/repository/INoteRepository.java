@@ -6,4 +6,6 @@ package org.cxk.domain.repository;
  * @create 2025/8/16 19:31
  */
 public interface INoteRepository {
+
+    int countByParentId(Long folderId);
 }

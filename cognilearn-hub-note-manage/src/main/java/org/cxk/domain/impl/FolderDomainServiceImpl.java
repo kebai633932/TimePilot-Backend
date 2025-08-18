@@ -2,6 +2,8 @@ package org.cxk.domain.impl;
 
 import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import lombok.extern.slf4j.Slf4j;
+import org.cxk.domain.model.entity.FolderEntity;
+import org.cxk.domain.repository.INoteRepository;
 import org.cxk.infrastructure.adapter.dao.po.Folder;
 import org.cxk.domain.IFolderDomainService;
 import org.cxk.domain.repository.IFolderRepository;
@@ -28,7 +30,8 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
 
     @Resource
     private IFolderRepository folderRepository;
-
+    @Resource
+    private INoteRepository noteRepository;
     /** 最大文件夹树高 */
     private static final int MAX_TREE_DEPTH = 5;
 
@@ -44,13 +47,13 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
 
         // 3. 生成新文件夹 ID 并保存
         Long folderId = TinyId.nextId("folder_create");
-        Folder folder = new Folder();
-        folder.setFolderId(folderId);
-        folder.setUserId(userId);
-        folder.setName(name);
-        folder.setParentId(parentId);
+        FolderEntity folderEntity=new FolderEntity();
+        folderEntity.setFolderId(folderId);
+        folderEntity.setUserId(userId);
+        folderEntity.setName(name);
+        folderEntity.setParentId(parentId);
 
-        folderRepository.save(folder);
+        folderRepository.save(folderEntity);
         return folderId;
     }
 
@@ -58,12 +61,12 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
     @Override
     public void updateFolder(Long userId, String name, Long folderId, Long newParentId) {
         // 1. 获取文件夹 & 权限校验
-        Folder folder = (Folder) folderRepository.findByFolderIdAndUserId(folderId, userId)
+        FolderEntity folderEntity = folderRepository.findByFolderIdAndUserId(folderId, userId)
                 .orElseThrow(() -> new BizException("文件夹不存在或权限不足"));
 
-        boolean parentChanged = !Objects.equals(folder.getParentId(), newParentId);
+        boolean parentChanged = !Objects.equals(folderEntity.getParentId(), newParentId);
         boolean nameChanged = name != null && !name.trim().isEmpty() &&
-                !name.trim().equals(folder.getName());
+                !name.trim().equals(folderEntity.getName());
 
         // 2. 如果没有任何修改，直接返回
         if (!parentChanged && !nameChanged) {
@@ -74,35 +77,34 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
         if (parentChanged) {
             validateBidirectionalTreeDepth(userId,folderId, newParentId);
             preventCircularDependency(folderId, newParentId);
-            folder.setParentId(newParentId);
+            folderEntity.setParentId(newParentId);
         }
 
         // 4. 如果名称有变化
         if (nameChanged) {
-            if (folderRepository.existsByUserIdAndParentIdAndName(userId, folder.getParentId(), name.trim())) {
+            if (folderRepository.existsByUserIdAndParentIdAndName(userId, folderEntity.getParentId(), name.trim())) {
                 throw new BizException("该名称的文件夹已存在");
             }
-            folder.setName(name.trim());
+            folderEntity.setName(name.trim());
         }
 
         // 5. 保存变更
-        folderRepository.save(folder);
+        folderRepository.save(folderEntity);
     }
 
     @Override
     public void deleteFolder(Long userId, Long folderId) {
         // 1. 获取文件夹 & 权限校验
-        Folder folder = (Folder) folderRepository.findByFolderIdAndUserId(folderId, userId)
+        FolderEntity folderEntity = folderRepository.findByFolderIdAndUserId(folderId, userId)
                 .orElseThrow(() -> new BizException("文件夹不存在或权限不足"));
 
         // 2. 检查是否为空文件夹
-        //todo noteRepository 也要判断
-        if (folderRepository.countByParentId(folderId) > 0 ) {
+        if (folderRepository.countByParentId(folderId) > 0 && noteRepository.countByParentId(folderId) > 0 ) {
             throw new BizException("文件夹非空，无法删除");
         }
 
         // 3. 删除记录
-        folderRepository.delete(folder);
+        folderRepository.delete(folderEntity);
     }
 
     /**
@@ -120,7 +122,7 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
                 throw new BizException("文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
             }
 
-            Folder parent = folderRepository.findByFolderId(currentFolderId)
+            FolderEntity parent = folderRepository.findByFolderId(currentFolderId)
                     .orElseThrow(() -> new BizException("父文件夹不存在"));
 
             if (!userId.equals(parent.getUserId())) {
@@ -148,7 +150,7 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
                 throw new BizException("移动后文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
             }
 
-            Folder parent = folderRepository.findByFolderId(currentFolderId)
+            FolderEntity parent = folderRepository.findByFolderId(currentFolderId)
                     .orElseThrow(() -> new BizException("父文件夹不存在"));
 
             if (!userId.equals(parent.getUserId())) {
@@ -206,7 +208,7 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
             if (depth > MAX_TREE_DEPTH) {
                 throw new BizException("文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
             }
-            Folder parent = folderRepository.findByFolderId(currentId)
+            FolderEntity parent = folderRepository.findByFolderId(currentId)
                     .orElseThrow(() -> new BizException("父文件夹不存在"));
 
             currentId = parent.getParentId();
