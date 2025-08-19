@@ -1,5 +1,6 @@
 package org.cxk.trigger.http;
 
+import api.response.Response;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.IFolderManageService;
@@ -7,7 +8,6 @@ import org.cxk.api.dto.FolderCreateDTO;
 import org.cxk.api.dto.FolderDeleteDTO;
 import org.cxk.api.dto.FolderUpdateDTO;
 import org.cxk.application.IFolderAppService;
-import org.cxk.domain.IFolderDomainService;
 import org.cxk.util.AuthenticationUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import types.enums.ResponseCode;
-import api.response.Response;
 
 /**
  * @author KJH

@@ -1,6 +1,9 @@
 package org.cxk.domain;
 
-import org.cxk.api.dto.*;
+import org.cxk.api.dto.FolderNoteDTO;
+import org.cxk.api.dto.NoteCreateDTO;
+import org.cxk.api.dto.NoteMoveDTO;
+import org.cxk.api.dto.NoteUpdateDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

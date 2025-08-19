@@ -5,9 +5,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.cxk.infrastructure.adapter.dao.po.Folder;
-import org.cxk.infrastructure.adapter.dao.po.Role;
-
-import java.util.List;
 
 /**
  * @author KJH

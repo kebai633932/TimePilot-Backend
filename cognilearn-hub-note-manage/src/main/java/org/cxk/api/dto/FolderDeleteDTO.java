@@ -3,7 +3,6 @@ package org.cxk.api.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.Size;
 import javax.validation.constraints.NotNull;
 /**
  * 删除文件夹 DTO

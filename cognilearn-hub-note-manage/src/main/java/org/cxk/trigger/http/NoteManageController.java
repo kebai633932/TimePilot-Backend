@@ -1,5 +1,6 @@
 package org.cxk.trigger.http;
 
+import api.response.Response;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.INoteManageService;
@@ -11,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import types.enums.ResponseCode;
-import api.response.Response;
 
 import java.util.List;
 
