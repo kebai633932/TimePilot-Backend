@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * @author KJH
- * @description
+ * @description 笔记删除请求
  * @create 2025/8/14 13:30
  */
 @Data

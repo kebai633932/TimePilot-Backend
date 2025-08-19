@@ -1,9 +1,7 @@
 package org.cxk.domain;
 
-import org.cxk.api.dto.NoteCreateDTO;
-import org.cxk.api.dto.NoteDTO;
-import org.cxk.api.dto.NoteQueryDTO;
-import org.cxk.api.dto.NoteUpdateDTO;
+import org.cxk.api.dto.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,9 +14,14 @@ public interface INoteDomainService {
 
     Long createNote(Long userId, NoteCreateDTO dto);
 
+    void moveNote(Long userId, NoteMoveDTO dto);
+
     void updateNote(Long userId, NoteUpdateDTO dto);
 
     void deleteNote(Long userId, Long noteId);
 
-    List<NoteDTO> listNotes(Long userId, NoteQueryDTO dto);
+
+    String uploadNoteImage(Long userId, MultipartFile file);
+
+    void attachNotesToFolders(Long userId, List<FolderNoteDTO> folderTree);
 }

@@ -14,7 +14,8 @@ public class Note {
 
     @TableId(type = IdType.AUTO)
     private Long id;
-
+    /** 笔记ID */
+    private Long noteId;
     private Long userId;
     private Long folderId;
     private String title;

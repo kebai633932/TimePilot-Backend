@@ -2,6 +2,7 @@ package org.cxk.domain.impl;
 
 import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import lombok.extern.slf4j.Slf4j;
+import org.cxk.api.dto.FolderNoteDTO;
 import org.cxk.domain.model.entity.FolderEntity;
 import org.cxk.domain.repository.INoteRepository;
 import org.cxk.infrastructure.adapter.dao.po.Folder;
@@ -16,9 +17,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate;
 import types.exception.BizException;
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,7 +31,9 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
     private IFolderRepository folderRepository;
     @Resource
     private INoteRepository noteRepository;
-    /** 最大文件夹树高 */
+    /**
+     * 最大文件夹树高
+     */
     private static final int MAX_TREE_DEPTH = 5;
 
     @Override
@@ -47,7 +48,7 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
 
         // 3. 生成新文件夹 ID 并保存
         Long folderId = TinyId.nextId("folder_create");
-        FolderEntity folderEntity=new FolderEntity();
+        FolderEntity folderEntity = new FolderEntity();
         folderEntity.setFolderId(folderId);
         folderEntity.setUserId(userId);
         folderEntity.setName(name);
@@ -70,12 +71,12 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
 
         // 2. 如果没有任何修改，直接返回
         if (!parentChanged && !nameChanged) {
-            return ;
+            return;
         }
 
         // 3. 如果父节点有变化
         if (parentChanged) {
-            validateBidirectionalTreeDepth(userId,folderId, newParentId);
+            validateBidirectionalTreeDepth(userId, folderId, newParentId);
             preventCircularDependency(folderId, newParentId);
             folderEntity.setParentId(newParentId);
         }
@@ -93,13 +94,59 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
     }
 
     @Override
+    public List<FolderNoteDTO> getFolderTree(Long userId) {
+        // 1. 查询用户所有文件夹
+        List<FolderEntity> folderEntityList = folderRepository.getFolderList(userId);
+        if (folderEntityList == null || folderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 2. 转换成 DTO
+        Map<Long, FolderNoteDTO> dtoMap = new HashMap<>();
+        for (FolderEntity folderEntity : folderEntityList) {
+            FolderNoteDTO dto = new FolderNoteDTO();
+            dto.setFolderId(folderEntity.getFolderId());
+            dto.setFolderName(folderEntity.getName());
+            dto.setNotes(new ArrayList<>());   // 先空着，后面可以填充笔记
+            dto.setFolders(new ArrayList<>());
+            dtoMap.put(folderEntity.getFolderId(), dto);
+        }
+
+        // 3. 建立树结构
+        List<FolderNoteDTO> roots = new ArrayList<>();
+        for (FolderEntity folderEntity : folderEntityList) {
+            // 取出当前文件夹对应的 DTO
+            FolderNoteDTO dto = dtoMap.get(folderEntity.getFolderId());
+
+            // 拿到它的父节点 ID
+            Long parentId = folderEntity.getParentId();
+
+            if (parentId == null || parentId == 0) {
+                // 没有父节点 → 说明它是一个根文件夹
+                roots.add(dto);
+            } else {
+                // 找到父节点 DTO
+                FolderNoteDTO parentDto = dtoMap.get(parentId);
+
+                if (parentDto != null) {
+                    // 如果父节点存在，就把当前节点挂到父节点的 children 列表里
+                    parentDto.getFolders().add(dto);
+                } else {
+                    // 如果找不到父节点（可能是数据异常），就退化成根节点
+                    roots.add(dto);
+                }
+            }
+        }
+        return roots;
+    }
+
+    @Override
     public void deleteFolder(Long userId, Long folderId) {
         // 1. 获取文件夹 & 权限校验
         FolderEntity folderEntity = folderRepository.findByFolderIdAndUserId(folderId, userId)
                 .orElseThrow(() -> new BizException("文件夹不存在或权限不足"));
 
         // 2. 检查是否为空文件夹
-        if (folderRepository.countByParentId(folderId) > 0 && noteRepository.countByParentId(folderId) > 0 ) {
+        if (folderRepository.countByParentId(folderId) > 0 || noteRepository.countByParentId(folderId) > 0) {
             throw new BizException("文件夹非空，无法删除");
         }
 
@@ -168,11 +215,12 @@ public class FolderDomainServiceImpl implements IFolderDomainService {
             throw new BizException("移动后文件夹层级不能超过 " + MAX_TREE_DEPTH + " 层");
         }
     }
+
     /**
      * 获取某个文件夹的最大子树深度（bfs）
      */
     private int getSubtreeMaxDepth(Long rootId) {
-        if(rootId==null){
+        if (rootId == null) {
             throw new BizException("无该文件夹id");
         }
         List<Long> currentLevel = Collections.singletonList(rootId);

@@ -1,5 +1,9 @@
 package org.cxk.domain.repository;
 
+import org.cxk.domain.model.entity.NoteEntity;
+
+import java.util.Optional;
+
 /**
  * @author KJH
  * @description
@@ -8,4 +12,10 @@ package org.cxk.domain.repository;
 public interface INoteRepository {
 
     int countByParentId(Long folderId);
+
+    void save(NoteEntity noteEntity);
+
+    Optional<NoteEntity> findByNoteIdAndUserId(Long noteId, Long userId);
+
+    void update(NoteEntity noteEntity);
 }

@@ -25,4 +25,6 @@ public interface IFolderRepository {
     Optional<FolderEntity> findByFolderIdAndUserId(Long folderId, Long userId);
 
     List<Long> findByParentIdList(List<Long> currentLevel);
+
+    List<FolderEntity> getFolderList(Long userId);
 }

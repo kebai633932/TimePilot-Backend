@@ -1,5 +1,9 @@
 package org.cxk.application;
 
+import org.cxk.api.dto.FolderNoteDTO;
+
+import java.util.List;
+
 /**
  * @author KJH
  * @description 负责文件夹领域
@@ -12,4 +16,6 @@ public interface IFolderAppService {
     void deleteFolder(Long userId, Long folderId);
 
     void updateFolder(Long userId, String name, Long folderId, Long parentId);
+
+    List<FolderNoteDTO> getFolderTree(Long userId);
 }

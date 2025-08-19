@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TokenPairDTO implements Serializable {
+public class TokenPairResponseDTO implements Serializable {
     private String accessToken;
     private String refreshToken;
 }

@@ -4,16 +4,16 @@ package org.cxk.trigger.http;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
-import org.cxk.service.IEmailService;
-import org.cxk.service.ITokenService;
-import org.cxk.service.IUserAuthService;
+import org.cxk.domain.IEmailService;
+import org.cxk.domain.ITokenService;
+import org.cxk.domain.IUserAuthService;
 import org.cxk.trigger.dto.*;
 import org.cxk.trigger.dto.type.VerificationChannelType;
 import org.cxk.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 import types.enums.ResponseCode;
 import types.exception.BizException;
-import types.response.Response;
+import api.response.Response;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/api/user/auth")
 @AllArgsConstructor
+//todo ddd解耦
 public class UserAuthController {
 
     private final IUserAuthService userAuthService;
@@ -94,13 +95,13 @@ public class UserAuthController {
     //每个用户在任意时刻只拥有一个有效 Refresh Token，防止被复制、复用、重放攻击，节省 Redis 内存，无需维护黑名单。
     //jti 一般是 UUID，只有几十字节，而完整 Refresh Token JWT 通常超过 200 字节，存储更轻量。
     @PostMapping("/refresh-token")
-    public Response<TokenPairDTO> refreshToken(@RequestBody RefreshTokenRequestDTO dto, HttpServletRequest request) {
+    public Response<TokenPairResponseDTO> refreshToken(@RequestBody RefreshTokenRequestDTO dto, HttpServletRequest request) {
 
         try {
             // 从Header中提取访问令牌
             String currentAccessToken = jwtUtil.parseJwt(request);
 
-            TokenPairDTO tokenPair = tokenService.refreshToken(
+            TokenPairResponseDTO tokenPair = tokenService.refreshToken(
                     dto.getRefreshToken(),
                     currentAccessToken
             );

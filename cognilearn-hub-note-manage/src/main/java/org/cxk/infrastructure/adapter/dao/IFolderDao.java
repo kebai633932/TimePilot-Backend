@@ -29,4 +29,6 @@ public interface IFolderDao extends BaseMapper<Folder> {
                     "WHERE folder_id = #{folderId} AND is_deleted = false "
     )
     void deleteByFolderId(Long folderId);
+    @Select("SELECT * FROM folder WHERE folder_id = #{folderId} AND user_id = #{userId} AND is_deleted = false")
+    Folder findByFolderIdAndUserId(Long folderId, Long userId);
 }

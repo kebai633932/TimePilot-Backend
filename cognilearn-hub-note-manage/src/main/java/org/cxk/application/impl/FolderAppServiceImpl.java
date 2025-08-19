@@ -1,11 +1,9 @@
 package org.cxk.application.impl;
 
-import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import lombok.extern.slf4j.Slf4j;
+import org.cxk.api.dto.FolderNoteDTO;
 import org.cxk.application.IFolderAppService;
 import org.cxk.domain.IFolderDomainService;
-import org.cxk.domain.repository.IFolderRepository;
-import org.cxk.infrastructure.adapter.dao.po.Folder;
 import org.cxk.util.RedisKeyPrefix;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -16,9 +14,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import types.exception.BizException;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,8 +39,6 @@ public class FolderAppServiceImpl implements IFolderAppService {
     private static final int LOCK_WAIT = 3;
     /** 锁自动释放时间（秒），避免宕机导致死锁 */
     private static final int LOCK_LEASE = 10;
-    /** 最大文件夹树高 */
-    private static final int MAX_TREE_DEPTH = 5;
 
     @Override
     public Long createFolder(Long userId, String name, Long parentId) {
@@ -141,12 +135,23 @@ public class FolderAppServiceImpl implements IFolderAppService {
     }
 
     @Override
+    public List<FolderNoteDTO> getFolderTree(Long userId) {
+        return folderDomainService.getFolderTree( userId);
+    }
+
+    @Override
     public void deleteFolder(Long userId, Long folderId) {
-        String lockKey = buildUserFolderLockKey(userId);
-        RLock lock = redissonClient.getLock(lockKey);
+        String userLockKey = buildUserFolderLockKey(userId);
+        String folderLockKey = buildFolderLockKey(folderId);
+
+        RLock userLock = redissonClient.getLock(userLockKey);
+        RLock folderLock = redissonClient.getLock(folderLockKey);
+
+        // 用 Redisson MultiLock 同时持有多把锁，避免死锁
+        RLock multiLock = redissonClient.getMultiLock(userLock, folderLock);
 
         try {
-            if (!lock.tryLock(LOCK_WAIT, LOCK_LEASE, TimeUnit.SECONDS)) {
+            if (!multiLock.tryLock(LOCK_WAIT, LOCK_LEASE, TimeUnit.SECONDS)) {
                 throw new BizException("系统繁忙，请稍后再试");
             }
 
@@ -175,16 +180,14 @@ public class FolderAppServiceImpl implements IFolderAppService {
             throw new BizException("系统异常，请稍后重试");
         } finally {
             try {
-                if (lock.isHeldByCurrentThread()) {
-                    lock.unlock();
+                if (multiLock.isHeldByCurrentThread()) {
+                    multiLock.unlock();
                 }
             } catch (Exception e) {
                 log.error("释放锁异常", e);
             }
         }
     }
-
-
 
     /** 删除用户的文件夹列表缓存（存在才删除） */
     private void clearUserFolderListCache(Long userId) {
@@ -201,5 +204,8 @@ public class FolderAppServiceImpl implements IFolderAppService {
     /** 构造用户目录锁的 Key */
     private String buildUserFolderLockKey(Long userId) {
         return "lock:user:" + userId + ":folderTree";
+    }
+
+    private String buildFolderLockKey(Long folderId) { return "lock:user:" + folderId ;
     }
 }
