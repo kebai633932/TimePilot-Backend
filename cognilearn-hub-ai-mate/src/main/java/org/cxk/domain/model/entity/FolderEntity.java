@@ -27,4 +27,7 @@ public class FolderEntity {
     private Long parentId;
     /** 文件夹名称 */
     private String name;
+
+    /** 删除时间 */
+    private Date deleteTime;
 }

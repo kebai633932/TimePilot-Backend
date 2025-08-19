@@ -15,6 +15,7 @@
         <module>cognilearn-hub-user-auth</module>
         <module>cognilearn-hub-app</module>
         <module>cognilearn-hub-types</module>
+        <module>cognilearn-hub-ai-mate</module>
     </modules>
 
     <repositories>

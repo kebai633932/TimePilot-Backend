@@ -2,6 +2,7 @@ package org.cxk.domain.repository;
 
 import org.cxk.domain.model.entity.NoteEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -18,4 +19,6 @@ public interface INoteRepository {
     Optional<NoteEntity> findByNoteIdAndUserId(Long noteId, Long userId);
 
     void update(NoteEntity noteEntity);
+
+    List<NoteEntity> findByUserId(Long userId);
 }

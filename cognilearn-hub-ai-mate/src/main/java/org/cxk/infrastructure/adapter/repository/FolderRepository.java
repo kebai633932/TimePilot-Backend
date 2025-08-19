@@ -45,6 +45,7 @@ public class FolderRepository implements IFolderRepository {
                         .userId(f.getUserId())
                         .parentId(f.getParentId())
                         .name(f.getName())
+                        .deleteTime(f.getDeleteTime())
                         .build());
     }
 
@@ -134,7 +135,7 @@ public class FolderRepository implements IFolderRepository {
                     folderEntityList.add(folderEntity);
 
                     // 写单个 folder 缓存
-                    refreshFolderInfoCache(folderEntity);
+                    refreshFolderInfoCache(folder.getFolderId(), folder.getParentId(), folder.getName());
                 }
             }
             return folderEntityList;
@@ -156,7 +157,7 @@ public class FolderRepository implements IFolderRepository {
         }
          // 3. 创建/更新缓存  写缓存
         refreshUserFolderListCache(userId, folderEntityList.stream().map(FolderEntity::getFolderId).collect(Collectors.toList()));
-        folderEntityList.forEach(this::refreshFolderInfoCache);
+        folderEntityList.forEach(f -> refreshFolderInfoCache(f.getFolderId(), f.getParentId(), f.getName()));
 
         return folderEntityList;
     }
@@ -173,10 +174,14 @@ public class FolderRepository implements IFolderRepository {
     }
 
     /** 创建/更新单个文件夹信息缓存 */
-    private void refreshFolderInfoCache(FolderEntity folderEntity) {
-        String cacheKey = RedisKeyPrefix.FOLDER_INFO.format(folderEntity.getFolderId());
+    private void refreshFolderInfoCache(Long folderId, Long parentId, String name) {
+        String cacheKey = RedisKeyPrefix.FOLDER_INFO.format(folderId);
         redissonClient.getKeys().delete(cacheKey);
-        redissonClient.getBucket(cacheKey).set(folderEntity);
+        Map<String, Object> info = new HashMap<>();
+        info.put("folderId", folderId);
+        info.put("parentId", parentId);
+        info.put("name", name);
+        redissonClient.getMap(cacheKey).putAll(info);
     }
 
     @Override
@@ -190,6 +195,7 @@ public class FolderRepository implements IFolderRepository {
                         .userId(f.getUserId())
                         .parentId(f.getParentId())
                         .name(f.getName())
+                        .deleteTime(f.getDeleteTime())
                         .build());
     }
 

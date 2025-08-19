@@ -138,6 +138,7 @@ public class NoteDomainServiceImpl implements INoteDomainService {
 
     @Override
     public void attachNotesToFolders(Long userId, List<FolderNoteDTO> folderTree) {
+        List<NoteEntity> noteEntityList=noteRepository.findByUserId(userId);
 
     }
 

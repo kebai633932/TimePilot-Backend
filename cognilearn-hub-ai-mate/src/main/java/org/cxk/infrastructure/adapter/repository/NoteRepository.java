@@ -11,7 +11,8 @@ import org.cxk.infrastructure.adapter.dao.INoteDao;
 import org.cxk.infrastructure.adapter.dao.po.Folder;
 import org.cxk.infrastructure.adapter.dao.po.Note;
 import org.cxk.util.RedisKeyPrefix;
-import org.redisson.api.*;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -19,9 +20,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import types.exception.BizException;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author KJH
@@ -195,106 +195,6 @@ public class NoteRepository implements INoteRepository {
         }
     }
 
-    @Override
-    public List<NoteEntity> findByUserId(Long userId) {
-        // 缓存 key
-        String userNoteListKey = RedisKeyPrefix.USER_NOTE_LIST.format(userId);
-
-        // 1. 先从缓存读用户的笔记 ID 列表
-        RList<Long> rList = redissonClient.getList(userNoteListKey);
-        List<Long> noteIds = rList.readAll();
-        List<NoteEntity> noteEntityList = new ArrayList<>();
-        List<Long> missedNoteIds = new ArrayList<>();
-
-        if (noteIds != null && !noteIds.isEmpty()) {
-            for (Long noteId : noteIds) {
-                String noteInfoKey = RedisKeyPrefix.NOTE_INFO.format(noteId);
-                RMap<String, Object> map = redissonClient.getMap(noteInfoKey);
-                if (!map.isEmpty()) {
-                    NoteEntity noteEntity = new NoteEntity();
-                    noteEntity.setNoteId((Long) map.get("noteId"));
-                    noteEntity.setFolderId((Long) map.get("folderId"));
-                    noteEntity.setTitle((String) map.get("title"));
-                    noteEntityList.add(noteEntity);
-                } else {
-                    missedNoteIds.add(noteId);
-                }
-            }
-
-            // 缓存缺失，去数据库补充
-            if (!missedNoteIds.isEmpty()) {
-                LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(Note::getUserId, userId);
-                wrapper.in(Note::getNoteId, missedNoteIds);
-                List<Note> dbNotes = noteDao.selectList(wrapper);
-
-                for (Note note : dbNotes) {
-                    NoteEntity entity = toEntity(note);
-                    //todo
-                    noteEntityList.add(entity);
-
-                    // 写单个 note 缓存
-                    refreshNoteInfoCache(entity);
-                }
-            }
-            return noteEntityList;
-        }
-
-        // 2. 缓存没数据 → 读数据库
-        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Note::getUserId, userId);
-        List<Note> dbNotes = noteDao.selectList(wrapper);
-
-        for (Note note : dbNotes) {
-            noteEntityList.add(toEntity(note));
-        }
-
-        // 3. 更新缓存：用户笔记列表 & 单个笔记
-        refreshUserNoteListCache(userId, noteEntityList.stream()
-                .map(NoteEntity::getNoteId)
-                .collect(Collectors.toList()));
-        noteEntityList.forEach(this::refreshNoteInfoCache);
-
-        return noteEntityList;
-    }
-
-    private NoteEntity toEntity(Note note) {
-        if (note == null) {
-            return null;
-        }
-        return NoteEntity.builder()
-                .noteId(note.getNoteId())
-                .userId(note.getUserId())
-                .folderId(note.getFolderId())
-                .title(note.getTitle())
-                .contentMd(note.getContentMd())
-                .contentPlain(note.getContentPlain())
-                .status(note.getStatus())
-                .isPublic(note.getIsPublic())
-                .isDeleted(note.getIsDeleted())
-                .deleteTime(note.getDeleteTime())
-                .build();
-    }
-
-    /** 创建/更新用户的笔记列表缓存 */
-    private void refreshUserNoteListCache(Long userId, List<Long> noteIds) {
-        String cacheKey = RedisKeyPrefix.USER_NOTE_LIST.format(userId);
-        redissonClient.getKeys().delete(cacheKey);
-        if (noteIds != null && !noteIds.isEmpty()) {
-            redissonClient.getList(cacheKey).addAll(noteIds);
-        }
-    }
-
-    /** 创建/更新单个笔记信息缓存 */
-    private void refreshNoteInfoCache(NoteEntity noteEntity) {
-        String cacheKey = RedisKeyPrefix.NOTE_INFO.format(noteEntity.getNoteId());
-        redissonClient.getKeys().delete(cacheKey);
-        Map<String, Object> info = new HashMap<>();
-        info.put("noteId", noteEntity.getNoteId());
-        info.put("folderId", noteEntity.getFolderId());
-        info.put("title", noteEntity.getTitle());
-        redissonClient.getMap(cacheKey).putAll(info);
-    }
 
     /** 删除用户的笔记列表缓存（存在才删除） */
     private void clearUserNoteListCache(Long userId) {
