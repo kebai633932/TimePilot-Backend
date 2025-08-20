@@ -1,7 +1,7 @@
 package org.cxk.domain.repository;
 
-import org.cxk.infrastructure.adapter.dao.po.User;
 import org.cxk.domain.model.entity.UserEntity;
+import org.cxk.infrastructure.adapter.dao.po.User;
 
 import java.util.List;
 

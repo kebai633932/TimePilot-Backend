@@ -1,9 +1,11 @@
 package org.cxk.domain.impl;
-import org.cxk.infrastructure.adapter.dao.po.Role;
-import org.cxk.infrastructure.adapter.dao.po.User;
+
+import jakarta.annotation.Resource;
 import org.cxk.domain.CustomUserDetailsService;
 import org.cxk.domain.repository.IRoleRepository;
 import org.cxk.domain.repository.IUserRepository;
+import org.cxk.infrastructure.adapter.dao.po.Role;
+import org.cxk.infrastructure.adapter.dao.po.User;
 import org.cxk.trigger.dto.CustomUserDTO;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 

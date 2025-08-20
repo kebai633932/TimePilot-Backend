@@ -1,8 +1,7 @@
 package org.cxk.api.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * @author KJH

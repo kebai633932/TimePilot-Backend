@@ -1,9 +1,9 @@
 package org.cxk.infrastructure.adapter.repository;
 
 import lombok.AllArgsConstructor;
+import org.cxk.domain.repository.IRoleRepository;
 import org.cxk.infrastructure.adapter.dao.IRoleDao;
 import org.cxk.infrastructure.adapter.dao.po.Role;
-import org.cxk.domain.repository.IRoleRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

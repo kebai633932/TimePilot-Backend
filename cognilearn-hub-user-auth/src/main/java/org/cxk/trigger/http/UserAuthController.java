@@ -1,6 +1,8 @@
 package org.cxk.trigger.http;
 
 
+import api.response.Response;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -13,9 +15,6 @@ import org.cxk.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 import types.enums.ResponseCode;
 import types.exception.BizException;
-import api.response.Response;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author KJH

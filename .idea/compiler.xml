@@ -18,13 +18,13 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="cognilearn-hub-ai-mate" options="-parameters" />
-      <module name="cognilearn-hub-app" options="-parameters" />
-      <module name="cognilearn-hub-backend" options="-parameters" />
-      <module name="cognilearn-hub-learn-time-plan" options="-parameters" />
-      <module name="cognilearn-hub-note-manage" options="-parameters" />
-      <module name="cognilearn-hub-types" options="-parameters" />
-      <module name="cognilearn-hub-user-auth" options="-parameters" />
+      <module name="cognilearn-hub-ai-mate" options="-parameters -parameters" />
+      <module name="cognilearn-hub-app" options="-parameters -parameters" />
+      <module name="cognilearn-hub-backend" options="-parameters -parameters" />
+      <module name="cognilearn-hub-learn-time-plan" options="-parameters -parameters" />
+      <module name="cognilearn-hub-note-manage" options="-parameters -parameters" />
+      <module name="cognilearn-hub-types" options="-parameters -parameters" />
+      <module name="cognilearn-hub-user-auth" options="-parameters -parameters" />
     </option>
   </component>
 </project>

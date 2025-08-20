@@ -1,7 +1,8 @@
 package org.cxk.config;
 
-import org.cxk.handler.CustomMetaObjectHandler;
+import org.apache.ibatis.annotations.Mapper;
 import org.mybatis.spring.annotation.MapperScan;
+import org.cxk.handler.CustomMetaObjectHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * @create 2025/7/29 9:21
  */
 @Configuration
-@MapperScan("org.cxk.infrastructure.adapter.dao") // Mapper 扫描路径
+@MapperScan("org.cxk.infrastructure.adapter.dao")// Mapper 扫描路径
 public class MyBatisPlusConfig {
 
     @Bean

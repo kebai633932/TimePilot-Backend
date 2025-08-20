@@ -1,6 +1,9 @@
 package org.cxk.domain;
 
-import org.cxk.trigger.dto.*;
+import org.cxk.trigger.dto.ForgotPasswordResetDTO;
+import org.cxk.trigger.dto.ResetPasswordDTO;
+import org.cxk.trigger.dto.UserDeleteDTO;
+import org.cxk.trigger.dto.UserRegisterDTO;
 
 /**
  * @author KJH

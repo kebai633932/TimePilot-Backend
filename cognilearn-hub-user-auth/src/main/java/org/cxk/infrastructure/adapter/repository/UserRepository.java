@@ -2,11 +2,11 @@ package org.cxk.infrastructure.adapter.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
+import org.cxk.domain.model.entity.UserEntity;
+import org.cxk.domain.repository.IUserRepository;
 import org.cxk.infrastructure.adapter.dao.IUserDao;
 import org.cxk.infrastructure.adapter.dao.converter.UserConverter;
 import org.cxk.infrastructure.adapter.dao.po.User;
-import org.cxk.domain.model.entity.UserEntity;
-import org.cxk.domain.repository.IUserRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

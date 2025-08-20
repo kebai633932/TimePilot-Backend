@@ -1,5 +1,6 @@
 package org.cxk.trigger.aop;
 
+import api.response.Response;
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,7 +20,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import types.enums.ResponseCode;
 import types.exception.BizException;
-import api.response.Response;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

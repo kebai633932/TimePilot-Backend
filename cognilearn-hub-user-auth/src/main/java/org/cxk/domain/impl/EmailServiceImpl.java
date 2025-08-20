@@ -1,6 +1,9 @@
 package org.cxk.domain.impl;
 
 import cn.hutool.core.util.RandomUtil;
+import jakarta.annotation.Resource;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.domain.IEmailService;
 import org.cxk.trigger.aop.EmailRateLimit;
@@ -14,9 +17,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import types.exception.BizException;
 
-import javax.annotation.Resource;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;

@@ -1,12 +1,12 @@
 package org.cxk.trigger.filter;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import org.cxk.domain.repository.IUserRepository;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.util.List;
 
 /**

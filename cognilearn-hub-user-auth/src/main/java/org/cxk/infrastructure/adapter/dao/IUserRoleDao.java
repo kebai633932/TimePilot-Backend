@@ -1,9 +1,7 @@
 package org.cxk.infrastructure.adapter.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.cxk.infrastructure.adapter.dao.po.User;
 import org.cxk.infrastructure.adapter.dao.po.UserRole;
 import org.springframework.data.repository.query.Param;
 

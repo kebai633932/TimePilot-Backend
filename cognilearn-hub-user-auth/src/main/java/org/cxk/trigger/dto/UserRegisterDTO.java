@@ -1,7 +1,6 @@
 package org.cxk.trigger.dto;
 
 import lombok.Data;
-import lombok.Getter;
 import org.cxk.trigger.dto.type.VerificationChannelType;
 
 import java.io.Serializable;

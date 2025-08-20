@@ -1,10 +1,10 @@
 package org.cxk.config;
 
 import org.cxk.domain.CustomUserDetailsService;
+import org.cxk.trigger.filter.JwtAuthenticationFilter;
 import org.cxk.trigger.filter.JwtLoginFilter;
 import org.cxk.trigger.handle.CustomAccessDeniedHandler;
 import org.cxk.trigger.handle.CustomAuthenticationEntryPoint;
-import org.cxk.trigger.filter.JwtAuthenticationFilter;
 import org.cxk.util.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,7 +33,7 @@ public class SecurityConfig {
                           JwtAuthenticationFilter jwtAuthenticationFilter,
                           CustomAuthenticationEntryPoint unauthorizedHandler,
                           CustomAccessDeniedHandler accessDeniedHandler,
-                          JwtUtil jwtUtil) {  // 加上JwtUtil
+                          JwtUtil jwtUtil) {
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.unauthorizedHandler = unauthorizedHandler;
@@ -45,17 +45,18 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    //AuthenticationManager 是由 AuthenticationConfiguration 延迟生成的，
-    // 在 Spring Security 初始化时才完成，它不是提前在一级 BeanDefinition 阶段就能注册好的 Bean
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+
+        authenticationManagerBuilder
                 .userDetailsService(customUserDetailsService)
-                .passwordEncoder(passwordEncoder())
-                .and()
-                .build();
+                .passwordEncoder(passwordEncoder());
+
+        return authenticationManagerBuilder.build();
     }
-    // 声明 jwtLoginFilter Bean 并显式传入依赖
+
     @Bean
     public JwtLoginFilter jwtLoginFilter(AuthenticationManager authenticationManager) {
         JwtLoginFilter filter = new JwtLoginFilter(authenticationManager);
@@ -66,26 +67,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtLoginFilter jwtLoginFilter) throws Exception {
-
         http
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .exceptionHandling()
-                .authenticationEntryPoint(unauthorizedHandler)
-                .accessDeniedHandler(accessDeniedHandler)
-                .and()
-                .authorizeHttpRequests()
-                .antMatchers(
-                        "/api/user/auth/login",
-                        "/api/user/auth/register",
-                        "/api/user/auth/sendEmailCode",
-                        "/api/user/auth/forgot-password/reset",
-                        "/api/user/auth/refresh-token",
-                        "/api/public/**"
-                ).permitAll()
-                .anyRequest().authenticated()
-                .and()
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(unauthorizedHandler)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(
+                                "/api/user/auth/login",
+                                "/api/user/auth/register",
+                                "/api/user/auth/sendEmailCode",
+                                "/api/user/auth/forgot-password/reset",
+                                "/api/user/auth/refresh-token",
+                                "/api/public/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAt(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -1,6 +1,7 @@
 package org.cxk.domain.impl;
 
 import io.jsonwebtoken.Claims;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.domain.ITokenService;
 import org.cxk.trigger.dto.TokenPairResponseDTO;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import types.exception.BizException;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
