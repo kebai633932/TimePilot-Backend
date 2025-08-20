@@ -2,35 +2,23 @@ package org.cxk.domain.impl;
 
 import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import lombok.extern.slf4j.Slf4j;
-import org.cxk.api.dto.FolderNoteDTO;
 import org.cxk.domain.model.entity.FolderEntity;
-import org.cxk.domain.repository.INoteRepository;
-import org.cxk.infrastructure.adapter.dao.po.Folder;
-import org.cxk.domain.IFolderDomainService;
+import org.cxk.domain.IAiService;
 import org.cxk.domain.repository.IFolderRepository;
-import org.cxk.util.RedisKeyPrefix;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.transaction.support.TransactionTemplate;
 import types.exception.BizException;
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 文件夹业务流程实现类
  */
 @Slf4j
 @Service
-public class FolderDomainServiceImpl implements IFolderDomainService {
+public class FolderDomainServiceImpl implements IAiService {
 
     @Resource
     private IFolderRepository folderRepository;
-    @Resource
-    private INoteRepository noteRepository;
     /**
      * 最大文件夹树高
      */

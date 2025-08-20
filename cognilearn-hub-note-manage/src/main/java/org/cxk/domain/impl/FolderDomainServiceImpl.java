@@ -1,6 +1,7 @@
 package org.cxk.domain.impl;
 
 import com.xiaoju.uemc.tinyid.client.utils.TinyId;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.dto.FolderNoteDTO;
 import org.cxk.domain.IFolderDomainService;
@@ -10,7 +11,6 @@ import org.cxk.domain.repository.INoteRepository;
 import org.springframework.stereotype.Service;
 import types.exception.BizException;
 
-import javax.annotation.Resource;
 import java.util.*;
 
 /**

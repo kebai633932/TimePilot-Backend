@@ -87,6 +87,7 @@ public class NoteRepository implements INoteRepository {
                                 } catch (Exception e) {
                                     log.error("清理用户笔记缓存异常", e);
                                 }
+
                             }
                         }
                 );

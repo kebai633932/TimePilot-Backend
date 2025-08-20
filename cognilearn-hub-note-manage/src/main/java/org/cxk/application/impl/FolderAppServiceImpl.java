@@ -175,9 +175,15 @@ public class FolderAppServiceImpl implements IFolderAppService {
                 );
                 return null;
             });
+//            try {
+//                clearFolderInfoCache(folderId);
+//                clearUserFolderListCache(userId);
+//            } catch (Exception e) {
+//                log.error("清理用户文件夹缓存异常", e);
+//            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new BizException("系统异常，请稍后重试");
+            throw new RuntimeException("系统异常，请稍后重试");
         } finally {
             try {
                 if (multiLock.isHeldByCurrentThread()) {
