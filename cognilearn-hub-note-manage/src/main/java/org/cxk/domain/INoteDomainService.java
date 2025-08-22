@@ -1,5 +1,6 @@
 package org.cxk.domain;
 
+import api.INoteService;
 import org.cxk.api.dto.FolderNoteDTO;
 import org.cxk.api.dto.NoteCreateDTO;
 import org.cxk.api.dto.NoteMoveDTO;
@@ -13,7 +14,7 @@ import java.util.List;
  * @description
  * @create 2025/4/25 0:56
  */
-public interface INoteDomainService {
+public interface INoteDomainService extends INoteService {
 
     Long createNote(Long userId, NoteCreateDTO dto);
 

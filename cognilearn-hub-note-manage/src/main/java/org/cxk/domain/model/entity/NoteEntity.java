@@ -39,6 +39,7 @@ public class NoteEntity {
 
     /** 删除时间 */
     private Date deleteTime;
+    private Long version;
     /** 移动笔记到新文件夹 */
     public void moveToFolder(Long newFolderId) {
         if (newFolderId != null) this.folderId = newFolderId;

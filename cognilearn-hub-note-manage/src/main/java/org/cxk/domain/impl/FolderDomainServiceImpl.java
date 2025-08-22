@@ -4,7 +4,7 @@ import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.dto.FolderNoteDTO;
-import org.cxk.domain.IFolderDomainService;
+import org.cxk.domain.IFolderService;
 import org.cxk.domain.model.entity.FolderEntity;
 import org.cxk.domain.repository.IFolderRepository;
 import org.cxk.domain.repository.INoteRepository;
@@ -18,7 +18,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
-public class FolderDomainServiceImpl implements IFolderDomainService {
+public class FolderDomainServiceImpl implements IFolderService {
 
     @Resource
     private IFolderRepository folderRepository;

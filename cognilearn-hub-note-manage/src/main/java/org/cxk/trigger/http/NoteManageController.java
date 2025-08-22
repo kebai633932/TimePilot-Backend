@@ -1,9 +1,12 @@
 package org.cxk.trigger.http;
 
+import api.INoteService;
+import api.dto.NoteVectorDTO;
 import api.response.Response;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.cxk.api.INoteManageService;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.cxk.api.dto.*;
 import org.cxk.application.IFolderAppService;
 import org.cxk.domain.INoteDomainService;
@@ -24,7 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/note")
 @AllArgsConstructor
-public class NoteManageController implements INoteManageService {
+public class NoteManageController{
 
     private final INoteDomainService noteService;
     private final IFolderAppService folderService;
@@ -33,7 +36,7 @@ public class NoteManageController implements INoteManageService {
      */
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Response<Long> createNote(@RequestBody NoteCreateDTO dto) {
+    public Response<Long> createNote(@Valid @RequestBody NoteCreateDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
 
@@ -49,7 +52,7 @@ public class NoteManageController implements INoteManageService {
      */
     @PostMapping("/move")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Response<Boolean> moveNote(@RequestBody NoteMoveDTO dto) {
+    public Response<Boolean> moveNote(@Valid @RequestBody NoteMoveDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
             noteService.moveNote(userId, dto);
@@ -64,7 +67,7 @@ public class NoteManageController implements INoteManageService {
      */
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Response<Boolean> updateNote(@RequestBody NoteUpdateDTO dto) {
+    public Response<Boolean> updateNote(@Valid @RequestBody NoteUpdateDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
             noteService.updateNote(userId, dto);
@@ -80,7 +83,7 @@ public class NoteManageController implements INoteManageService {
      */
     @PostMapping("/delete")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Response<Boolean> deleteNote(@RequestBody NoteDeleteDTO dto) {
+    public Response<Boolean> deleteNote(@Valid @RequestBody NoteDeleteDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
 
@@ -133,7 +136,7 @@ public class NoteManageController implements INoteManageService {
      */
     @PostMapping("/upload")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Response<String> uploadImage(@RequestParam("file") MultipartFile file) {
+    public Response<String> uploadImage(@Valid @RequestParam("file") MultipartFile file) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
 
@@ -145,4 +148,5 @@ public class NoteManageController implements INoteManageService {
             return Response.error(ResponseCode.UN_ERROR, "上传失败");
         }
     }
+
 }

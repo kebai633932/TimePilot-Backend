@@ -4,7 +4,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.dto.FolderNoteDTO;
 import org.cxk.application.IFolderAppService;
-import org.cxk.domain.IFolderDomainService;
+import org.cxk.domain.IFolderService;
 import org.cxk.util.RedisKeyPrefix;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -31,7 +31,7 @@ public class FolderAppServiceImpl implements IFolderAppService {
     @Resource
     private RedissonClient redissonClient;
     @Resource
-    private IFolderDomainService folderDomainService;
+    private IFolderService folderDomainService;
     @Resource
     private TransactionTemplate transactionTemplate;
 

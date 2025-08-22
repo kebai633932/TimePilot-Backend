@@ -28,6 +28,7 @@ public class Note {
     private Boolean isDeleted;
 
     private Date deleteTime;
+    private Long version;
 
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;

@@ -24,8 +24,21 @@ public interface INoteDao  extends BaseMapper<Note> {
             "    is_deleted = #{isDeleted}, " +
             "    delete_time = #{deleteTime}, " +
             "    update_time = NOW() " +
-            "WHERE note_id = #{noteId} ")
-    void updateByNoteId(Note note);
-    @Select("SELECT * FROM note WHERE note_id = #{noteId} AND user_id = #{userId} LIMIT 1")
+            "    version = version+1 " +
+            "WHERE note_id = #{noteId} AND version = #{version} AND is_deleted = false")
+    int updateByNoteId(Note note);
+    @Select("SELECT * FROM note WHERE note_id = #{noteId} AND user_id = #{userId} AND is_deleted = false LIMIT 1")
     Note findByNoteIdAndUserId(@Param("noteId") Long noteId, @Param("userId") Long userId);
+    @Update("UPDATE note " +
+            "SET title = #{title}, " +
+            "    content_md = #{contentMd}, " +
+            "    content_plain = #{contentPlain}, " +
+            "    folder_id = #{folderId}, " +
+            "    status = #{status}, " +
+            "    is_public = #{isPublic}, " +
+            "    is_deleted = #{isDeleted}, " +
+            "    delete_time = #{deleteTime}, " +
+            "    update_time = NOW() " +
+            "WHERE note_id = #{noteId} ")
+    int moveByNoteId(Note note);
 }

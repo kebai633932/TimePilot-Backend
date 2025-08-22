@@ -1,10 +1,12 @@
 package org.cxk.domain.impl;
 
+import api.dto.NoteVectorDTO;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.cxk.api.dto.FolderNoteDTO;
 import org.cxk.api.dto.NoteCreateDTO;
 import org.cxk.api.dto.NoteMoveDTO;
@@ -21,6 +23,7 @@ import types.exception.BizException;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author KJH
@@ -29,6 +32,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
+@DubboService(version = "1.0")
 public class NoteDomainServiceImpl implements INoteDomainService {
 
     @Resource
@@ -61,6 +65,7 @@ public class NoteDomainServiceImpl implements INoteDomainService {
                 .contentPlain(MarkdownUtils.mdToPlainText(dto.getContentMd()))
                 .status((short) 0)
                 .isPublic(Boolean.FALSE)
+                .version(0L)
                 .build();
 
         // 4. 保存
@@ -83,7 +88,7 @@ public class NoteDomainServiceImpl implements INoteDomainService {
         }
 
         // 3. 保存
-        noteRepository.update(noteEntity);
+        noteRepository.move(noteEntity);
     }
     @Override
     public void updateNote(Long userId, NoteUpdateDTO dto) {
@@ -143,7 +148,32 @@ public class NoteDomainServiceImpl implements INoteDomainService {
     public void attachNotesToFolders(Long userId, List<FolderNoteDTO> folderTree) {
         List<NoteEntity> noteEntityList=noteRepository.findByUserId(userId);
 
+        //todo 把笔记挂靠在文件夹下
     }
 
 
+    @Override
+    public List<NoteVectorDTO> findNotesByIds(List<Long> batchIds) {
+        // 1. 批量查询近期修改但未向量化的笔记
+        List<NoteEntity> noteEntities = noteRepository.findByNoteIds(batchIds);
+        if (noteEntities == null || noteEntities.isEmpty()) {
+            log.warn("没有批量查询近期修改但未向量化的笔记");
+        }
+
+        // 2. 转换为 NoteVectorDTO
+        return noteEntities.stream()
+                .map(note -> {
+                    NoteVectorDTO dto = new NoteVectorDTO();
+                    dto.setNoteId(note.getNoteId());
+                    dto.setUserId(note.getUserId());
+                    dto.setFolderId(note.getFolderId());
+                    dto.setTitle(note.getTitle());
+                    dto.setContentPlain(note.getContentPlain());
+                    dto.setIsDeleted(note.getIsDeleted());
+                    dto.setDeleteTime(note.getDeleteTime());
+                    dto.setVersion(note.getVersion());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 }

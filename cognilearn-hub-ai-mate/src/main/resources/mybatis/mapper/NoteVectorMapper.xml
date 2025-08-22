@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.cxk.infrastructure.adapter.dao.INoteVectorDao">
+    <insert id="saveNoteEmbeddings" parameterType="java.util.List">
+        INSERT INTO note_vector(note_id, tenant_id, embedding, is_deleted, delete_time, create_time, update_time, content, metadata, version)
+        VALUES
+        <foreach collection="noteVectorList" item="item" separator=",">
+            (#{item.noteId}, #{item.tenantId}, #{item.embedding}, #{item.isDeleted}, #{item.deleteTime}, NOW(), NOW(), #{item.content}, #{item.metadata}, #{item.version})
+        </foreach>
+    </insert>
+    <update id="deleteByNoteIds" parameterType="java.util.List">
+        UPDATE note_vector
+        SET is_deleted = true,
+        delete_time = NOW()
+        WHERE note_id IN
+        <foreach collection="noteIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author KJH
- * @description
+ * @description todo 异常抛出的类型需要学习，修改
  * @create 2025/8/16 19:30
  */
 @Slf4j
@@ -57,7 +57,7 @@ public class NoteRepository implements INoteRepository {
         note.setIsPublic(noteEntity.getIsPublic());
         note.setIsDeleted(noteEntity.getIsDeleted());
         note.setDeleteTime(noteEntity.getDeleteTime());
-
+        note.setVersion(noteEntity.getVersion());
         Long folderId=noteEntity.getFolderId();
         Long userId=noteEntity.getUserId();
         String folderLockKey = buildFolderLockKey(noteEntity.getFolderId());
@@ -124,10 +124,76 @@ public class NoteRepository implements INoteRepository {
                         .isPublic(n.getIsPublic())
                         .isDeleted(n.getIsDeleted())
                         .deleteTime(n.getDeleteTime())
+                        .version(n.getVersion())
                         .build()
                 );
     }
+    @Override
+    public void move(NoteEntity noteEntity) {
+        //1. 类型转换
+        Note note=new Note();
+        note.setNoteId(noteEntity.getNoteId());
+        note.setUserId(noteEntity.getUserId());
 
+        note.setFolderId(noteEntity.getFolderId());
+        note.setTitle(noteEntity.getTitle());
+        note.setContentMd(noteEntity.getContentMd());
+        note.setContentPlain(noteEntity.getContentPlain());
+        note.setStatus(noteEntity.getStatus());
+        note.setIsPublic(noteEntity.getIsPublic());
+        note.setIsDeleted(noteEntity.getIsDeleted());
+        note.setDeleteTime(noteEntity.getDeleteTime());
+
+        Long folderId=noteEntity.getFolderId();
+        Long userId=noteEntity.getUserId();
+        Long noteId=noteEntity.getNoteId();
+        String folderLockKey = buildFolderLockKey(noteEntity.getFolderId());
+        RLock folderLock = redissonClient.getLock(folderLockKey);
+
+        try {
+            if (!folderLock.tryLock(3, 10, TimeUnit.SECONDS)) {
+                throw new BizException("系统繁忙，请稍后再试");
+            }
+
+            transactionTemplate.execute(status -> {
+                // 2. 检查是否有父文件夹
+                if(null==folderDao.findByFolderIdAndUserId(folderId,userId)){
+                    status.setRollbackOnly();
+                    throw new BizException("目标文件夹不存在或无权限");
+                }
+                // 3. 移动笔记到数据库表
+                noteDao.moveByNoteId(note);
+
+                // 4. 注册事务提交后的回调，清理缓存
+                TransactionSynchronizationManager.registerSynchronization(
+                        new TransactionSynchronization() {
+                            @Override
+                            public void afterCommit() {
+                                try {
+                                    clearUserNoteListCache(userId);
+                                    clearNoteInfoCache(noteId);
+                                } catch (Exception e) {
+                                    log.error("清理用户笔记缓存异常", e);
+                                }
+                            }
+                        }
+                );
+                return null;
+            });
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BizException("移动笔记业务，系统异常，请稍后重试");
+        } finally {
+            try {
+                if (folderLock.isHeldByCurrentThread()) {
+                    folderLock.unlock();
+                }
+            } catch (Exception e) {
+                log.error("释放锁异常", e);
+            }
+        }
+    }
 
     @Override
     public void update(NoteEntity noteEntity) {
@@ -144,6 +210,7 @@ public class NoteRepository implements INoteRepository {
         note.setIsPublic(noteEntity.getIsPublic());
         note.setIsDeleted(noteEntity.getIsDeleted());
         note.setDeleteTime(noteEntity.getDeleteTime());
+        note.setVersion(noteEntity.getVersion());
 
         Long folderId=noteEntity.getFolderId();
         Long userId=noteEntity.getUserId();
@@ -259,6 +326,23 @@ public class NoteRepository implements INoteRepository {
         return noteEntityList;
     }
 
+    @Override
+    public List<NoteEntity> findByNoteIds(List<Long> batchIds) {
+        if (batchIds == null || batchIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 1. 查询数据库
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Note::getNoteId, batchIds);
+        List<Note> notes = noteDao.selectList(wrapper);
+
+        // 2. 转换为领域实体
+        return notes.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
+    }
+
     private NoteEntity toEntity(Note note) {
         if (note == null) {
             return null;
@@ -274,6 +358,7 @@ public class NoteRepository implements INoteRepository {
                 .isPublic(note.getIsPublic())
                 .isDeleted(note.getIsDeleted())
                 .deleteTime(note.getDeleteTime())
+                .version(note.getVersion())
                 .build();
     }
 
@@ -295,6 +380,11 @@ public class NoteRepository implements INoteRepository {
         info.put("folderId", noteEntity.getFolderId());
         info.put("title", noteEntity.getTitle());
         redissonClient.getMap(cacheKey).putAll(info);
+    }
+    /** 添加笔记到待向量化集合 */
+    private void addNoteSetCache( Long noteId) {
+        String cacheKey = String.valueOf(RedisKeyPrefix.NOTE_VECTOR_TODO);
+        redissonClient.getSet(cacheKey).add(noteId);
     }
 
     /** 删除用户的笔记列表缓存（存在才删除） */

@@ -1,5 +1,6 @@
 package org.cxk.domain;
 
+
 import org.cxk.api.dto.FolderNoteDTO;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
  * @description
  * @create 2025/8/14 11:04
  */
-public interface IFolderDomainService {
+public interface IFolderService {
 
     Long createFolder(Long userId, String name, Long parentId);
 

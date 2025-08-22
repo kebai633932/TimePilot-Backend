@@ -115,6 +115,49 @@
                 <artifactId>mybatis-spring</artifactId>
                 <version>3.0.3</version>
             </dependency>
+            <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-amqp -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-amqp</artifactId>
+                <version>3.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>3.2.6</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>3.2.6</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.nacos</groupId>
+                <artifactId>nacos-client</artifactId>
+                <version>2.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+                <version>3.1.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.netflix.hystrix</groupId>
+                <artifactId>hystrix-javanica</artifactId>
+                <version>1.5.18</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.elasticsearch.plugin/x-pack-sql-jdbc -->
+            <dependency>
+                <groupId>org.elasticsearch.plugin</groupId>
+                <artifactId>x-pack-sql-jdbc</artifactId>
+                <version>7.17.14</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.xuxueli/xxl-job-core -->
+            <dependency>
+                <groupId>com.xuxueli</groupId>
+                <artifactId>xxl-job-core</artifactId>
+                <version>2.4.1</version>
+            </dependency>
             <!-- PostgreSQL -->
             <dependency>
                 <groupId>org.postgresql</groupId>

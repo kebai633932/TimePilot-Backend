@@ -19,6 +19,9 @@ public interface INoteRepository {
     Optional<NoteEntity> findByNoteIdAndUserId(Long noteId, Long userId);
 
     void update(NoteEntity noteEntity);
+    void move(NoteEntity noteEntity);
 
     List<NoteEntity> findByUserId(Long userId);
+
+    List<NoteEntity> findByNoteIds(List<Long> batchIds);
 }

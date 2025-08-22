@@ -9,8 +9,8 @@ public enum RedisKeyPrefix {
     USER_NOTE_LIST("user:%s:note:list"),
     NOTE_INFO("note:%s:info"),
     FOLDER_INFO("folder:%s:info"),
-    USER_FOLDER_LIST("user:%s:folder:list");
-
+    USER_FOLDER_LIST("user:%s:folder:list"),
+    NOTE_VECTOR_TODO("note:vector:todo");
 
 
     private final String pattern;
