@@ -15,11 +15,11 @@ import java.util.List;
  */
 public interface IAiService {
 
-//    VectorSearchResponseDTO vectorSearch(VectorSearchRequestDTO dto);
-//
-//    FlashCardResponseDTO generateFlashCards(FlashCardRequestDTO dto);
-//
-//    FlashCardResponseDTO generateFlashCards(Long userId);
+    VectorSearchResponseDTO vectorSearch(VectorSearchRequestDTO dto);
+
+    FlashCardResponseDTO generateFlashCards(FlashCardRequestDTO dto);
+
+    FlashCardResponseDTO generateFlashCards(Long userId);
 
     void vectorizeNote(List<Long> noteIds);
 }

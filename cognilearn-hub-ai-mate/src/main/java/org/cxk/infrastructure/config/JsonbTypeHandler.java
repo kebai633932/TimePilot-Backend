@@ -8,7 +8,7 @@ import org.apache.ibatis.type.MappedTypes;
 
 import java.sql.*;
 import java.util.Map;
-
+// todo 理论上 怎么转换的
 @MappedTypes(Map.class)        // 告诉 MyBatis 这是处理 Map 类型的
 @MappedJdbcTypes(JdbcType.OTHER) // 对应 PostgreSQL jsonb 类型
 public class JsonbTypeHandler extends BaseTypeHandler<Map<String, Object>> {

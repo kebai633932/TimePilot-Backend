@@ -48,90 +48,75 @@ public class AiServiceImpl implements IAiService {
     private PgVectorStore vectorStore;       // PgVectorStore 向量存储
     @Resource
     private TokenTextSplitter tokenTextSplitter;
-//    /**
-//     * 向量检索方法（RAG 检索入口）
-//     * 向量检索的返回类型通常是 List<Document>
-//     * Document： String content , Map<String, Object> metadata
-//     *
-//     * @param dto VectorSearchRequestDTO 包含查询文本和返回数量
-//     * @return VectorSearchResponseDTO 包含检索到的文档内容和元数据
-//     */
-//    @Override
-//    public VectorSearchResponseDTO vectorSearch(VectorSearchRequestDTO dto) {
-//        String query = dto.getQuery();
-//        double threshold = (dto.getThreshold() != null)
-//                ? dto.getThreshold()
-//                : 0.75; // 默认 0.75
-//
-//        // 1. 构建搜索请求
-//        SearchRequest request = SearchRequest.query(query)
-//                .withScoreThreshold(threshold); // 设置相似度阈值
-//
-//        // 2. 检索,
-//        var docs = vectorStore.similaritySearch(request);
-//
-//        // 3. 封装结果
-//        VectorSearchResponseDTO response = new VectorSearchResponseDTO();
-//        response.setDocuments(
-//                docs.stream()
-//                        .map(d -> new VectorSearchResponseDTO.DocumentDTO(d.getContent(), d.getMetadata()))
-//                        .toList()
-//        );
-//
-//        return response;
-//    }
-//
-//    /**
-//     * 根据给定笔记列表生成复习卡片
-//     * 查
-//     * @param dto FlashCardRequestDTO 包含笔记ID和内容
-//     * @return FlashCardResponseDTO 返回问题/答案映射
-//     */
-//    @Override
-//    public FlashCardResponseDTO generateFlashCards(FlashCardRequestDTO dto) {
-//        Map<Long, FlashCardResponseDTO.FlashCardDTO> flashMap = new HashMap<>();
-//        List<Long> noteIds = new ArrayList<>();
-//
-//        for (var note : dto.getNotes()) {
-//            long noteId = note.getNoteId();
-//            noteIds.add(noteId);
-//
-//            // 调用 Chat 模型生成复习问题
-//            String question = chatModel.chat("为以下笔记生成复习问题: " + note.getContent()).getContent();
-//            // 调用 Chat 模型生成复习答案（可分点）
-//            String answer = chatModel.chat("为以下笔记生成答案（分点）: " + note.getContent()).getContent();
-//
-//            FlashCardResponseDTO.FlashCardDTO flashCard = new FlashCardResponseDTO.FlashCardDTO();
-//            flashCard.setQuestion(question);
-//            flashCard.setAnswer(answer);
-//
-//            flashMap.put(noteId, flashCard);
-//        }
-//
-//        FlashCardResponseDTO response = new FlashCardResponseDTO();
-//        response.setNoteIds(noteIds);
-//        response.setFlashCardDTOMap(flashMap);
-//        return response;
-//    }
-//
-//    /**
-//     * 一键生成用户今日复习卡片
-//     * 查
-//     * @param userId 用户ID
-//     * @return FlashCardResponseDTO 返回今日所有笔记的复习卡片
-//     */
-//    @Override
-//    public FlashCardResponseDTO generateFlashCards(Long userId) {
-//        // 1. 查询用户今天的笔记
-//        var notes = folderRepository.findTodayNotes(userId);
-//
-//        // 2. 构建请求 DTO
-//        FlashCardRequestDTO dto = new FlashCardRequestDTO();
-//        dto.setNotes(notes);
-//
-//        // 3. 调用上面的方法生成复习卡片
-//        return generateFlashCards(dto);
-//    }
+    /**
+     * 向量检索方法（RAG 检索入口）
+     * 向量检索的返回类型通常是 List<Document>
+     * Document： String content , Map<String, Object> metadata
+     *
+     * @param dto VectorSearchRequestDTO 包含查询文本和返回数量
+     * @return VectorSearchResponseDTO 包含检索到的文档内容和元数据
+     */
+    @Override
+    public VectorSearchResponseDTO vectorSearch(VectorSearchRequestDTO dto) {
+        if (dto.getQuery() == null || dto.getQuery().isEmpty()) {
+            return new VectorSearchResponseDTO(Collections.emptyList());
+        }
+
+        // 1. 构建向量检索请求
+        float[] queryEmbedding = embeddingModel.embed(dto.getQuery());
+        SearchRequest request = SearchRequest.builder()
+                .queryEmbedding(queryEmbedding)
+                .topK(dto.getTopK() != null ? dto.getTopK() : 5) // 默认 5 条
+                .build();
+
+        // 2. 执行相似度搜索
+        List<Document> docs = vectorStore.similaritySearch(request);
+
+        // 3. 封装响应
+        return new VectorSearchResponseDTO(
+                docs.stream()
+                        .map(doc -> new VectorSearchResponseDTO.Doc(
+                                doc.getContent(),
+                                doc.getMetadata()
+                        ))
+                        .toList()
+        );
+    }
+
+    /**
+     * 根据给定笔记列表生成复习卡片
+     * @param dto FlashCardRequestDTO 包含笔记ID和内容
+     * @return FlashCardResponseDTO 返回问题/答案映射
+     */
+    @Override
+    public FlashCardResponseDTO generateFlashCards(FlashCardRequestDTO dto) {
+        // 1. 查询笔记向量或内容
+        List<NoteVectorDTO> notes = noteService.findNotesByIds(dto.getNoteIds());
+
+        // 2. 用 Chat 模型生成问题/答案
+        Map<String, String> qaMap = new HashMap<>();
+        for (NoteVectorDTO note : notes) {
+            String question = chatModel.generate("生成复习问题: " + note.getContentPlain());
+            String answer = chatModel.generate("生成问题的答案: " + note.getContentPlain());
+            qaMap.put(question, answer);
+        }
+        return new FlashCardResponseDTO(qaMap);
+    }
+
+
+    /**
+     * 一键生成用户今日复习卡片
+     * @param userId 用户ID
+     * @return FlashCardResponseDTO 返回今日所有笔记的复习卡片
+     */
+    @Override
+    public FlashCardResponseDTO generateFlashCards(Long userId) {
+        List<NoteVectorDTO> notes = noteService.findNotesByUserId(userId);
+        List<Long> noteIds = notes.stream().map(NoteVectorDTO::getNoteId).toList();
+        FlashCardRequestDTO dto = new FlashCardRequestDTO();
+        dto.setNoteIds(noteIds);
+        return generateFlashCards(dto);
+    }
 
 
     //    todo 根据笔记内容大小，放不同的表，保证不会oom(多个笔记可能会内存爆)

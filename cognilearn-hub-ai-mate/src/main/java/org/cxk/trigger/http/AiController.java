@@ -28,45 +28,45 @@ public class AiController implements IAiApiService {
 
     private final IAiService aiService;
 
-//    /** 向量检索（RAG 检索入口） */
-//    @PostMapping("/search")
-//    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-//    public Response<VectorSearchResponseDTO> search(@Valid @RequestBody VectorSearchRequestDTO dto) {
-//        try {
-//            VectorSearchResponseDTO result = aiService.vectorSearch(dto);
-//            return Response.success(result, "检索成功");
-//        } catch (Exception e) {
-//            log.error("向量检索失败",e);
-//            return Response.error(ResponseCode.UN_ERROR, "生成失败");
-//        }
-//    }
-//    // 一键生成今日复习卡片
-//    @PostMapping("/flashcards/today")
-//    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-//    public Response<FlashCardResponseDTO> generateTodayCards() {
-//        try {
-//            Long userId = AuthenticationUtil.getCurrentUserId();
-////            FlashCardResponseDTO cards = aiService.generateFlashCards(userId);
-////            return Response.success(cards, "生成成功");
-//        } catch (Exception e) {
-//            log.error("生成复习卡片失败",e);
-//            return Response.error(ResponseCode.UN_ERROR, "生成失败");
-//        }
-//    }
-//    /** 生成复习卡片 */
-//    @PostMapping("/flashcards")
-//    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-//    public Response<FlashCardResponseDTO> generateCards(@Valid @RequestBody FlashCardRequestDTO dto) {
-//        try {
-//            FlashCardResponseDTO cards = aiService.generateFlashCards(dto);
-//            return Response.success(cards, "生成成功");
-//        } catch (Exception e) {
-//            log.error("生成复习卡片失败",e);
-//            return Response.error(ResponseCode.UN_ERROR, "生成失败");
-//        }
-//    }
+    /** 向量检索（RAG 检索入口） */
+    @PostMapping("/search")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public Response<VectorSearchResponseDTO> search(@Valid @RequestBody VectorSearchRequestDTO dto) {
+        try {
+            VectorSearchResponseDTO result = aiService.vectorSearch(dto);
+            return Response.success(result, "检索成功");
+        } catch (Exception e) {
+            log.error("向量检索失败",e);
+            return Response.error(ResponseCode.UN_ERROR, "生成失败");
+        }
+    }
+    // 一键生成今日复习卡片
+    @PostMapping("/flashcards/today")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public Response<FlashCardResponseDTO> generateTodayCards() {
+        try {
+            Long userId = AuthenticationUtil.getCurrentUserId();
+            FlashCardResponseDTO cards = aiService.generateFlashCards(userId);
+            return Response.success(cards, "生成成功");
+        } catch (Exception e) {
+            log.error("生成复习卡片失败",e);
+            return Response.error(ResponseCode.UN_ERROR, "生成失败");
+        }
+    }
+    /** 生成复习卡片 */
+    @PostMapping("/flashcards")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public Response<FlashCardResponseDTO> generateCards(@Valid @RequestBody FlashCardRequestDTO dto) {
+        try {
+            FlashCardResponseDTO cards = aiService.generateFlashCards(dto);
+            return Response.success(cards, "生成成功");
+        } catch (Exception e) {
+            log.error("生成复习卡片失败",e);
+            return Response.error(ResponseCode.UN_ERROR, "生成失败");
+        }
+    }
 
-    /** 根据笔记生成发帖草稿 */
+/** 根据笔记生成发帖草稿 */
 //    todo 后续做
 //    @PostMapping("/draft-post")
 //    @PreAuthorize("hasAnyRole('USER','ADMIN')")
