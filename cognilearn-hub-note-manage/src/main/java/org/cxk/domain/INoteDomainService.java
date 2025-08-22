@@ -1,13 +1,11 @@
 package org.cxk.domain;
 
 import api.INoteService;
-import org.cxk.api.dto.FolderNoteDTO;
-import org.cxk.api.dto.NoteCreateDTO;
-import org.cxk.api.dto.NoteMoveDTO;
-import org.cxk.api.dto.NoteUpdateDTO;
+import org.cxk.api.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author KJH
@@ -27,5 +25,5 @@ public interface INoteDomainService extends INoteService {
 
     String uploadNoteImage(Long userId, MultipartFile file);
 
-    void attachNotesToFolders(Long userId, List<FolderNoteDTO> folderTree);
+    List<NoteInfoDTO> attachNotesToFolders(Long userId, Map<Long, FolderNoteDTO> folderNoteDTOMap);
 }

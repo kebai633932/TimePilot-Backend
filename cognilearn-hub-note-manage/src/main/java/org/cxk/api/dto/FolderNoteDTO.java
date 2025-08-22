@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 public class FolderNoteDTO {
     private Long folderId;
+    private Long parentId;
     private String folderName;
     private List<NoteInfoDTO> notes;
     private List<FolderNoteDTO> folders;

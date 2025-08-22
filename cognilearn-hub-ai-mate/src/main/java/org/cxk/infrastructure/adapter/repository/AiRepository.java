@@ -1,6 +1,5 @@
 package org.cxk.infrastructure.adapter.repository;
 
-import com.alibaba.fastjson2.JSON;
 import com.pgvector.PGvector;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,6 @@ import org.cxk.util.RedisKeyPrefix;
 import org.redisson.api.RBatch;
 import org.redisson.api.RSet;
 import org.redisson.api.RedissonClient;
-import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;

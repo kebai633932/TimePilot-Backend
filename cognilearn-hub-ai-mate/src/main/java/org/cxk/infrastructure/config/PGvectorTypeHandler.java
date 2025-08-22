@@ -4,7 +4,10 @@ import com.pgvector.PGvector;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PGvectorTypeHandler extends BaseTypeHandler<PGvector> {
 

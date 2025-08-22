@@ -3,6 +3,7 @@ package org.cxk.application.impl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.dto.FolderNoteDTO;
+import org.cxk.api.dto.NoteInfoDTO;
 import org.cxk.application.IFolderAppService;
 import org.cxk.domain.IFolderService;
 import org.cxk.util.RedisKeyPrefix;
@@ -15,6 +16,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import types.exception.BizException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -135,10 +137,13 @@ public class FolderAppServiceImpl implements IFolderAppService {
     }
 
     @Override
-    public List<FolderNoteDTO> getFolderTree(Long userId) {
-        return folderDomainService.getFolderTree( userId);
+    public Map<Long, FolderNoteDTO> getFolderMap(Long userId) {
+        return folderDomainService.getFolderMap(userId);
     }
-
+    @Override
+    public FolderNoteDTO buildFolderTree(Map<Long, FolderNoteDTO> folderNoteDTOMap,List<NoteInfoDTO> rootNotes){
+        return folderDomainService.buildFolderTree(folderNoteDTOMap,rootNotes);
+    }
     @Override
     public void deleteFolder(Long userId, Long folderId) {
         String userLockKey = buildUserFolderLockKey(userId);

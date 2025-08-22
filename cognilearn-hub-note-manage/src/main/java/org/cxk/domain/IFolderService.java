@@ -2,8 +2,13 @@ package org.cxk.domain;
 
 
 import org.cxk.api.dto.FolderNoteDTO;
+import org.cxk.api.dto.NoteInfoDTO;
+import org.cxk.domain.model.entity.FolderEntity;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author KJH
@@ -18,5 +23,7 @@ public interface IFolderService {
 
     void updateFolder(Long userId, String name, Long folderId, Long parentId);
 
-    List<FolderNoteDTO> getFolderTree(Long userId);
+    Map<Long, FolderNoteDTO> getFolderMap(Long userId) ;
+
+    FolderNoteDTO buildFolderTree(Map<Long, FolderNoteDTO> folderNoteDTOMap,List<NoteInfoDTO> rootNotes);
 }

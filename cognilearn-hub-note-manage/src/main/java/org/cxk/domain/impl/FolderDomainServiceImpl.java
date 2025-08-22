@@ -4,6 +4,7 @@ import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.dto.FolderNoteDTO;
+import org.cxk.api.dto.NoteInfoDTO;
 import org.cxk.domain.IFolderService;
 import org.cxk.domain.model.entity.FolderEntity;
 import org.cxk.domain.repository.IFolderRepository;
@@ -87,49 +88,63 @@ public class FolderDomainServiceImpl implements IFolderService {
     }
 
     @Override
-    public List<FolderNoteDTO> getFolderTree(Long userId) {
+    public Map<Long, FolderNoteDTO> getFolderMap(Long userId) {
+        Map<Long, FolderNoteDTO> folderNoteDTOMap = new HashMap<>();
         // 1. 查询用户所有文件夹
         List<FolderEntity> folderEntityList = folderRepository.getFolderList(userId);
         if (folderEntityList == null || folderEntityList.isEmpty()) {
-            return Collections.emptyList();
+            return folderNoteDTOMap;
         }
         // 2. 转换成 DTO
-        Map<Long, FolderNoteDTO> dtoMap = new HashMap<>();
         for (FolderEntity folderEntity : folderEntityList) {
             FolderNoteDTO dto = new FolderNoteDTO();
             dto.setFolderId(folderEntity.getFolderId());
+            dto.setParentId(folderEntity.getParentId());
             dto.setFolderName(folderEntity.getName());
             dto.setNotes(new ArrayList<>());   // 先空着，后面可以填充笔记
             dto.setFolders(new ArrayList<>());
-            dtoMap.put(folderEntity.getFolderId(), dto);
+            folderNoteDTOMap.put(folderEntity.getFolderId(), dto);
         }
 
-        // 3. 建立树结构
+        return folderNoteDTOMap;
+    }
+    @Override
+//    todo 有风险，如果不是走系统，二是数据库直接修改，有可能无限循环
+//    在 updateFolder 中有防循环依赖逻辑，
+//    但 buildFolderTree 没有防护。如果数据库里有异常数据（手动修改 parentId），可能导致无限递归或逻辑错误
+    public FolderNoteDTO buildFolderTree(Map<Long, FolderNoteDTO> folderNoteDTOMap,List<NoteInfoDTO> rootNotes) {
+        // 1. 建立树结构
+        FolderNoteDTO root =new FolderNoteDTO();
+
         List<FolderNoteDTO> roots = new ArrayList<>();
-        for (FolderEntity folderEntity : folderEntityList) {
+        root.setFolders(roots);
+        root.setNotes(rootNotes);
+
+        for (Long folderId : folderNoteDTOMap.keySet()) {
             // 取出当前文件夹对应的 DTO
-            FolderNoteDTO dto = dtoMap.get(folderEntity.getFolderId());
+            FolderNoteDTO dto = folderNoteDTOMap.get(folderId);
 
             // 拿到它的父节点 ID
-            Long parentId = folderEntity.getParentId();
+            Long parentId = dto.getParentId();
 
             if (parentId == null || parentId == 0) {
                 // 没有父节点 → 说明它是一个根文件夹
                 roots.add(dto);
             } else {
                 // 找到父节点 DTO
-                FolderNoteDTO parentDto = dtoMap.get(parentId);
+                FolderNoteDTO parentDto = folderNoteDTOMap.get(parentId);
 
                 if (parentDto != null) {
                     // 如果父节点存在，就把当前节点挂到父节点的 children 列表里
                     parentDto.getFolders().add(dto);
                 } else {
                     // 如果找不到父节点（可能是数据异常），就退化成根节点
+                    log.error("文件夹找不到父节点（可能是数据异常），就退化成根节点，parentId={}", parentId);
                     roots.add(dto);
                 }
             }
         }
-        return roots;
+        return root;
     }
 
     @Override

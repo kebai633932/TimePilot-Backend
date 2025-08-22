@@ -1,12 +1,9 @@
 package org.cxk.trigger.http;
 
-import api.INoteService;
-import api.dto.NoteVectorDTO;
 import api.response.Response;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.cxk.api.dto.*;
 import org.cxk.application.IFolderAppService;
 import org.cxk.domain.INoteDomainService;
@@ -17,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import types.enums.ResponseCode;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author KJH
@@ -96,18 +94,19 @@ public class NoteManageController{
     }
 
     /**
-     * todo 架构有点问题
      * 查询笔记树（文件夹 + 笔记）
      */
     @PostMapping("/listInfo")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Response<List<FolderNoteDTO>> listFolderNotes() {
+    public Response<FolderNoteDTO> listFolderNotes() {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
-            // 1. 获取用户的文件夹树（每个文件夹下的子文件夹）
-            List<FolderNoteDTO> folderTree = folderService.getFolderTree(userId);
+            // 1. 获取用户所有文件夹信息 map
+            Map<Long, FolderNoteDTO> folderNoteDTOMap = folderService.getFolderMap(userId);
             // 2. 给每个文件夹挂载笔记
-            noteService.attachNotesToFolders(userId, folderTree);
+            List<NoteInfoDTO> rootNotes = noteService.attachNotesToFolders(userId, folderNoteDTOMap);
+            // 3.构建用户的文件夹树（每个文件夹下的子文件夹）
+            FolderNoteDTO folderTree = folderService.buildFolderTree(folderNoteDTOMap,rootNotes);
             return Response.success(folderTree, "查询成功");
         } catch (Exception e) {
             log.error("查询笔记树失败", e);

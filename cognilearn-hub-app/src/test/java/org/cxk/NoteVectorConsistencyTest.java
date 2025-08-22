@@ -1,31 +1,18 @@
 package org.cxk;
 
-import api.INoteService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.cxk.domain.model.entity.NoteVectorEntity;
 import org.cxk.domain.repository.IAiRepository;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
-import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc

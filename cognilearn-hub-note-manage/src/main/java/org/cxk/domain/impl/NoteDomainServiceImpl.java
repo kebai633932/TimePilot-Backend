@@ -7,10 +7,7 @@ import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.cxk.api.dto.FolderNoteDTO;
-import org.cxk.api.dto.NoteCreateDTO;
-import org.cxk.api.dto.NoteMoveDTO;
-import org.cxk.api.dto.NoteUpdateDTO;
+import org.cxk.api.dto.*;
 import org.cxk.domain.INoteDomainService;
 import org.cxk.domain.model.entity.NoteEntity;
 import org.cxk.domain.repository.IFolderRepository;
@@ -21,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import types.exception.BizException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -120,6 +119,7 @@ public class NoteDomainServiceImpl implements INoteDomainService {
 
 
     //todo 这个应该放types模块的其他service
+    //todo 未测试
     @Override
     public String uploadNoteImage(Long userId, MultipartFile file) {
         try {
@@ -145,10 +145,43 @@ public class NoteDomainServiceImpl implements INoteDomainService {
     }
 
     @Override
-    public void attachNotesToFolders(Long userId, List<FolderNoteDTO> folderTree) {
-        List<NoteEntity> noteEntityList=noteRepository.findByUserId(userId);
+    public List<NoteInfoDTO> attachNotesToFolders(Long userId, Map<Long, FolderNoteDTO> folderNoteDTOMap) {
+        List<NoteInfoDTO> rootNotes=new ArrayList<>();
+        // 1. 查询用户所有笔记
+        List<NoteEntity> noteEntityList = noteRepository.findByUserId(userId);
+        if (noteEntityList == null || noteEntityList.isEmpty()) {
+            return rootNotes; // 没有笔记，直接返回
+        }
 
-        //todo 把笔记挂靠在文件夹下
+        // 2. 遍历笔记，挂到对应的文件夹 DTO 上
+        for (NoteEntity noteEntity : noteEntityList) {
+            NoteInfoDTO noteInfoDTO = new NoteInfoDTO();
+            noteInfoDTO.setNoteId(noteEntity.getNoteId());
+            noteInfoDTO.setFolderId(noteEntity.getFolderId());
+            noteInfoDTO.setTitle(noteEntity.getTitle());
+
+            Long folderId = noteEntity.getFolderId();
+
+            // 3. 找到对应的文件夹
+            if (folderId == null || folderId == 0) {
+                // 没有父节点 → 说明它是一个根笔记
+                rootNotes.add(noteInfoDTO);
+            } else {
+                // 找到父节点 DTO
+                FolderNoteDTO parentDto = folderNoteDTOMap.get(folderId);
+
+                if (parentDto != null) {
+                    // 如果父节点存在，就把当前节点挂到父节点的 children 列表里
+                    parentDto.getNotes().add(noteInfoDTO);
+                } else {
+                    // 如果找不到父节点（可能是数据异常），就退化成根节点
+                    log.error("笔记找不到父节点（可能是数据异常），就退化成根节点，folderId={}", folderId);
+                    rootNotes.add(noteInfoDTO);
+                }
+            }
+        }
+        return rootNotes;
+
     }
 
 

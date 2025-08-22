@@ -1,8 +1,10 @@
 package org.cxk.application;
 
 import org.cxk.api.dto.FolderNoteDTO;
+import org.cxk.api.dto.NoteInfoDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author KJH
@@ -17,5 +19,7 @@ public interface IFolderAppService {
 
     void updateFolder(Long userId, String name, Long folderId, Long parentId);
 
-    List<FolderNoteDTO> getFolderTree(Long userId);
+    Map<Long, FolderNoteDTO> getFolderMap(Long userId) ;
+
+    FolderNoteDTO buildFolderTree(Map<Long, FolderNoteDTO> folderNoteDTOMap,List<NoteInfoDTO> rootNotes);
 }
