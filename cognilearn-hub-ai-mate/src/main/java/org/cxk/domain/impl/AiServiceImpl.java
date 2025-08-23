@@ -12,6 +12,9 @@ import org.cxk.api.dto.VectorSearchResponseDTO;
 import org.cxk.domain.IAiService;
 import org.cxk.domain.model.entity.NoteVectorEntity;
 import org.cxk.domain.repository.IAiRepository;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
@@ -113,44 +116,80 @@ public class AiServiceImpl implements IAiService {
         response.setNoteInfoList(noteInfoList);
         return response;
     }
-
-
-
     /**
-     * 根据给定笔记列表生成复习卡片
+     * 根据给定笔记列表生成复习卡片  todo 结构化Prompt
      * @param dto FlashCardRequestDTO 包含笔记ID和内容
      * @return FlashCardResponseDTO 返回问题/答案映射
      */
     @Override
     public FlashCardResponseDTO generateFlashCards(FlashCardRequestDTO dto) {
-        // 1. 查询笔记向量或内容
         List<NoteVectorDTO> notes = noteService.findNotesByIds(dto.getNoteIds());
 
-        // 2. 用 Chat 模型生成问题/答案
-        Map<String, String> qaMap = new HashMap<>();
+        FlashCardResponseDTO response = new FlashCardResponseDTO();
+        Map<Long, FlashCardResponseDTO.FlashCard> flashCardMap = new HashMap<>();
+        List<Long> noteIds = new ArrayList<>();
+
+        // 1. 构建批量 Prompt
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("你是复习卡片生成器。请根据以下笔记生成 JSON 格式的复习卡片：\n");
+        promptBuilder.append("输出格式：[{'noteId':长整数,'question':'...','answer':'...'}]\n");
+        promptBuilder.append("注意：answer 可以换行或分点，不要多余文本\n\n");
+
         for (NoteVectorDTO note : notes) {
-            String question = chatModel.generate("生成复习问题: " + note.getContentPlain());
-            String answer = chatModel.generate("生成问题的答案: " + note.getContentPlain());
-            qaMap.put(question, answer);
+            promptBuilder.append("noteId: ").append(note.getNoteId())
+                    .append(", 标题: ").append(note.getTitle())
+                    .append(", 内容: ").append(note.getContentPlain()).append("\n");
         }
-        return new FlashCardResponseDTO(qaMap);
+
+        // 2. 调用 Chat 模型
+        String jsonArrayStr = chatModel.call(promptBuilder.toString());
+
+        // 3. 解析 JSON 数组
+        try {
+            JSONArray array = new JSONArray(jsonArrayStr);
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                Long noteId = obj.getLong("noteId");
+                FlashCardResponseDTO.FlashCard card = new FlashCardResponseDTO.FlashCard();
+                card.setQuestion(obj.getString("question"));
+                card.setAnswer(obj.getString("answer"));
+
+                // 对应笔记原信息
+                notes.stream()
+                        .filter(n -> n.getNoteId().equals(noteId))
+                        .findFirst()
+                        .ifPresent(n -> {
+                            card.setTitle(n.getTitle());
+                            card.setContentMd(n.getContentMd());
+                        });
+
+                flashCardMap.put(noteId, card);
+                noteIds.add(noteId);
+            }
+        } catch (JSONException e) {
+            log.warn("解析复习卡片 JSON 失败: {}", jsonArrayStr);
+            throw new BizException("解析复习卡片 JSON 失败", e);
+        }
+
+        response.setNoteIds(noteIds);
+        response.setFlashCardDTOMap(flashCardMap);
+        return response;
     }
 
-
     /**
-     * 一键生成用户今日复习卡片
+     * 一键生成用户今日复习卡片  todo 待完成
      * @param userId 用户ID
      * @return FlashCardResponseDTO 返回今日所有笔记的复习卡片
      */
     @Override
     public FlashCardResponseDTO generateFlashCards(Long userId) {
-        List<NoteVectorDTO> notes = noteService.findNotesByUserId(userId);
-        List<Long> noteIds = notes.stream().map(NoteVectorDTO::getNoteId).toList();
-        FlashCardRequestDTO dto = new FlashCardRequestDTO();
-        dto.setNoteIds(noteIds);
-        return generateFlashCards(dto);
+//        List<NoteVectorDTO> notes = noteService.findNotesByUserId(userId);
+//        List<Long> noteIds = notes.stream().map(NoteVectorDTO::getNoteId).toList();
+//        FlashCardRequestDTO dto = new FlashCardRequestDTO();
+//        dto.setNoteIds(noteIds);
+//        return generateFlashCards(dto);
+        return new FlashCardResponseDTO();
     }
-
 
     //    todo 根据笔记内容大小，放不同的表，保证不会oom(多个笔记可能会内存爆)
     /**
