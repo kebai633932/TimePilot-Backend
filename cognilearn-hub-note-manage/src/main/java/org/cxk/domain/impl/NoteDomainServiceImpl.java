@@ -205,6 +205,7 @@ public class NoteDomainServiceImpl implements INoteDomainService {
                     dto.setIsDeleted(note.getIsDeleted());
                     dto.setDeleteTime(note.getDeleteTime());
                     dto.setVersion(note.getVersion());
+                    dto.setContentMd(note.getContentMd());
                     return dto;
                 })
                 .collect(Collectors.toList());

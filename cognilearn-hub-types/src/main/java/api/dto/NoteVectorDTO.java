@@ -18,6 +18,7 @@ public class NoteVectorDTO {
     private Long folderId;
     private String title;
     private String contentPlain;
+    private String contentMd;
     private Boolean isDeleted;
 
     private Date deleteTime;

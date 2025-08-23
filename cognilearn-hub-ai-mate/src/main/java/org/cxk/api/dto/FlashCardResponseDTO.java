@@ -20,10 +20,8 @@ public class FlashCardResponseDTO {
      * @description 复习卡片
      * @create 2025/8/21 18:10
      */
-    public class FlashCard {
-
+    public static class FlashCard {
         private String question;  // 问题
-
         private String answer;    // 答案（可以用换行或分点分隔）
         private String title;    // 笔记标题
         private String contentMd;    // 笔记 markdown 原文
