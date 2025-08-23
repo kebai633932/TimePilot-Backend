@@ -19,6 +19,7 @@ import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.stereotype.Service;
+import types.exception.BizException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,40 +49,72 @@ public class AiServiceImpl implements IAiService {
     private PgVectorStore vectorStore;       // PgVectorStore 向量存储
     @Resource
     private TokenTextSplitter tokenTextSplitter;
+
+
     /**
      * 向量检索方法（RAG 检索入口）
-     * 向量检索的返回类型通常是 List<Document>
-     * Document： String content , Map<String, Object> metadata
-     *
-     * @param dto VectorSearchRequestDTO 包含查询文本和返回数量
-     * @return VectorSearchResponseDTO 包含检索到的文档内容和元数据
+     * 功能：
+     * 1. 使用 Spring AI 向量存储对输入查询文本进行相似度检索；
+     * 2. 根据相似度得分（默认从高到低）排序；
+     * 3. 提取检索到的笔记ID和标题，去重，保证同一个笔记只出现一次；
+     * 4. 支持可选阈值（similarityThreshold）和返回数量（topK）。
+     * @param dto VectorSearchRequestDTO 包含用户ID、查询文本、可选阈值和返回条数
+     * @return VectorSearchResponseDTO 包含去重后的笔记ID和标题列表
+     * @throws BizException 当查询内容为空时抛出
      */
     @Override
     public VectorSearchResponseDTO vectorSearch(VectorSearchRequestDTO dto) {
         if (dto.getQuery() == null || dto.getQuery().isEmpty()) {
-            return new VectorSearchResponseDTO(Collections.emptyList());
+            throw new BizException("没有搜索内容");
         }
 
-        // 1. 构建向量检索请求
-        float[] queryEmbedding = embeddingModel.embed(dto.getQuery());
-        SearchRequest request = SearchRequest.builder()
-                .queryEmbedding(queryEmbedding)
-                .topK(dto.getTopK() != null ? dto.getTopK() : 5) // 默认 5 条
-                .build();
+        // 1. 构建向量检索请求（Spring AI 风格）
+        SearchRequest.Builder builder = SearchRequest.builder()
+                .query(dto.getQuery())
+                .similarityThreshold(dto.getThreshold() != null ? dto.getThreshold() : 0.75f);
 
-        // 2. 执行相似度搜索
+        if (dto.getTopK() != null) {
+            builder.topK(dto.getTopK());
+        }
+
+        SearchRequest request = builder.build();
+
+        // 2. 执行相似度搜索，结果按相似度得分从高到低排序
         List<Document> docs = vectorStore.similaritySearch(request);
 
-        // 3. 封装响应
-        return new VectorSearchResponseDTO(
-                docs.stream()
-                        .map(doc -> new VectorSearchResponseDTO.Doc(
-                                doc.getContent(),
-                                doc.getMetadata()
-                        ))
-                        .toList()
-        );
+        // 3. 结果为空时直接返回空响应
+        if (docs == null || docs.isEmpty()) {
+            VectorSearchResponseDTO emptyResponse = new VectorSearchResponseDTO();
+            emptyResponse.setNoteInfoList(Collections.emptyList());
+            return emptyResponse;
+        }
+
+        // 4. 提取 noteId 和 title，并去重（保证每个笔记只出现一次）
+        List<VectorSearchResponseDTO.NoteInfo> noteInfoList = new ArrayList<>();
+        Set<Long> seenNoteIds = new HashSet<>();
+
+        for (Document doc : docs) {
+            Object noteIdObj = doc.getMetadata().get("noteId");
+            Object titleObj = doc.getMetadata().get("title");
+
+            if (noteIdObj != null && titleObj != null) {
+                Long noteId = Long.valueOf(noteIdObj.toString());
+                if (seenNoteIds.add(noteId)) { // 第一次出现才加入
+                    VectorSearchResponseDTO.NoteInfo noteInfo = new VectorSearchResponseDTO.NoteInfo();
+                    noteInfo.setNoteId(noteId);
+                    noteInfo.setTitle(titleObj.toString());
+                    noteInfoList.add(noteInfo);
+                }
+            }
+        }
+
+        // 5. 封装响应
+        VectorSearchResponseDTO response = new VectorSearchResponseDTO();
+        response.setNoteInfoList(noteInfoList);
+        return response;
     }
+
+
 
     /**
      * 根据给定笔记列表生成复习卡片

@@ -12,13 +12,12 @@ public class VectorSearchRequestDTO {
 
     @NotNull(message = "用户ID不能为空")
     private Long userId;
-
-    private Double threshold;
-
+    // 可选：相关系数
+    private Float threshold;
+    // 可选：限制返回条数
+    private Integer topK;
     @NotNull(message = "查询内容不能为空")
     @Size(max = 255, message = "查询内容不能超过255个字符")
     private String query;
 
-//    // 可选：搜索范围，例如文件夹ID
-//    private Long folderId;
 }

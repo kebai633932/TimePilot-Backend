@@ -12,8 +12,10 @@ import java.util.List;
 @Data
 public class VectorSearchResponseDTO {
     private List<NoteInfo> noteInfoList;
+
+
     @Data
-    public class NoteInfo {
+    public static class NoteInfo {
 
         private Long noteId;  // 笔记id
 
