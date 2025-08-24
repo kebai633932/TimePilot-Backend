@@ -1,6 +1,6 @@
 package org.cxk.domain;
 
-import api.INoteService;
+import org.cxk.api.INoteService;
 import org.cxk.api.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,7 +12,7 @@ import java.util.Map;
  * @description
  * @create 2025/4/25 0:56
  */
-public interface INoteDomainService extends INoteService {
+public interface INoteDomainService{
 
     Long createNote(Long userId, NoteCreateDTO dto);
 

@@ -1,7 +1,7 @@
 package org.cxk.domain.impl;
 
-import api.INoteService;
-import api.dto.NoteVectorDTO;
+import org.cxk.api.INoteService;
+import org.cxk.api.dto.NoteVectorDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -19,6 +19,7 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.metadata.ChatGenerationMetadata;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.document.Document;
@@ -26,11 +27,12 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.ai.openai.api.ResponseFormat;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.stereotype.Service;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,12 +56,13 @@ public class AiServiceImpl implements IAiService {
     @Resource
     private OpenAiEmbeddingModel embeddingModel;       // PgVectorStore 向量存储
     @Resource
-    private OpenAiChatModel chatModel;       // Chat 模型，用于生成问题/答案
+    private OpenAiChatModel openAiChatModel;       // Chat 模型，用于生成问题/答案
     @Resource
     private PgVectorStore vectorStore;       // PgVectorStore 向量存储
     @Resource
     private TokenTextSplitter tokenTextSplitter;
-
+//    @Resource
+//    private FlashcardToolCallback flashcardToolCallback;
 
     /**
      * 向量检索方法（RAG 检索入口）
@@ -128,9 +131,12 @@ public class AiServiceImpl implements IAiService {
     public FlashCardResponseDTO generateFlashCards(FlashCardRequestDTO dto) {
         // ========== 0. 查询笔记 ==========
         List<NoteVectorDTO> notes = noteService.findNotesByIds(dto.getNoteIds());
+        if (notes.isEmpty()) {
+            log.warn("未找到指定ID的笔记: {}", dto.getNoteIds());
+            throw new BizException("未找到指定ID的笔记");
+        }
 
         // ========== 1. 拼接用户消息 ==========
-        // 将笔记转成自然语言输入，方便模型理解
         StringBuilder messages = new StringBuilder();
         messages.append("请根据以下笔记生成复习卡片(flashcards):\n");
         for (NoteVectorDTO note : notes) {
@@ -141,120 +147,203 @@ public class AiServiceImpl implements IAiService {
                     .append("\n");
         }
 
-        // ========== 2. 定义函数 schema ==========
-        // 单个 flashcard 的 JSON 结构
+        // ========== 2. 定义 JSON Schema ==========
         Map<String, Object> flashcardItemSchema = Map.of(
                 "type", "object",
                 "properties", Map.of(
-                        "noteId", Map.of(  "type", "integer", "description", "笔记ID"),
-                        "question", Map.of("type", "string", "description", "问题"),
-                        "answer", Map.of("type", "string", "description", "答案")
+                        "noteId", Map.of(
+                                "type", "integer",
+                                "description", "笔记ID，必须与提供的笔记ID匹配"
+                        ),
+                        "question", Map.of(
+                                "type", "string",
+                                "description", "基于笔记内容的问题，应简洁明了",
+                                "maxLength", 200
+                        ),
+                        "answer", Map.of(
+                                "type", "string",
+                                "description", "基于笔记内容的准确答案",
+                                "maxLength", 500
+                        )
                 ),
-                "required", List.of("noteId", "question", "answer")
+                "required", List.of("noteId", "question", "answer"),
+                "additionalProperties", false
         );
 
-        // 函数参数结构（外层包装）
-        Map<String, Object> parameters = Map.of(
+        Map<String, Object> responseSchema = Map.of(
                 "type", "object",
                 "properties", Map.of(
                         "flashcards", Map.of(
                                 "type", "array",
                                 "items", flashcardItemSchema,
-                                "description", "生成的复习卡片列表"
+                                "description", "生成的复习卡片列表，每个卡片必须对应一个提供的笔记ID"
                         )
                 ),
-                "required", List.of("flashcards")
+                "required", List.of("flashcards"),
+                "additionalProperties", false
         );
 
-        // ========== 3. 定义 FunctionTool ==========
-        // 这里直接 new，而不是用 builder()/from()
-        OpenAiApi.FunctionTool.Function functionDef = new OpenAiApi.FunctionTool.Function(
-                "根据笔记内容生成复习卡片",   // description
-                "create_flashcards",           // function name
-                parameters,                    // 参数 schema
-                true                           // strict 模式
-        );
-
-        OpenAiApi.FunctionTool functionTool = new OpenAiApi.FunctionTool(
-                OpenAiApi.FunctionTool.Type.FUNCTION,
-                functionDef
-        );
+        // ========== 3. 创建 ResponseFormat ==========
+        ResponseFormat responseFormat = ResponseFormat.builder()
+                .type(ResponseFormat.Type.JSON_SCHEMA)
+                .jsonSchema(ResponseFormat.JsonSchema.builder()
+                        .name("flashcards_response")
+                        .schema(responseSchema)
+                        .strict(true)
+                        .build())
+                .build();
 
         // ========== 4. 设置模型调用参数 ==========
         OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .tools(List.of(functionTool)) // 注册 function
-                .toolChoice(Map.of( // 强制调用特定函数
-                        "type", "function",
-                        "function", Map.of("name", "create_flashcards")
-                ))
-                .model("gpt-4o-mini")         // 使用的模型
+                .responseFormat(responseFormat) // 使用结构化输出
+                .model("gpt-4o-mini") // 必须是支持结构化输出的模型
+                .temperature(0.1)
                 .build();
 
         // ========== 5. 构建 Prompt ==========
         List<Message> messageList = List.of(
-                new SystemMessage("你是一个专业的复习卡片生成助手，请根据用户提供的笔记内容生成结构化的复习卡片。" +
-                        "请严格根据笔记ID生成 flashcard，输出 JSON 中每条 noteId 的 question 和 answer 必须对应该笔记内容。"),
+                new SystemMessage("""
+            你是一个专业的复习卡片生成助手，请根据用户提供的笔记内容生成结构化的复习卡片。
+            
+            要求:
+            1. 为每个笔记生成至少一个复习卡片
+            2. 问题应简洁明了，能够测试对知识点的理解
+            3. 答案应准确完整，直接基于提供的笔记内容
+            4. 确保每个卡片都与特定的笔记ID关联
+            5. 严格按照指定的JSON格式返回数据，不要添加任何额外的解释或说明文字
+            """),
                 new UserMessage(messages.toString())
         );
         Prompt prompt = new Prompt(messageList, options);
 
         // ========== 6. 调用模型 ==========
-        ChatResponse chatResponse = chatModel.call(prompt);
-
-        // 拿到模型返回的 Assistant 消息
-        AssistantMessage output = chatResponse.getResult().getOutput();
-        List<AssistantMessage.ToolCall> toolCalls = output.getToolCalls();
+        ChatResponse chatResponse;
+        try {
+            chatResponse = openAiChatModel.call(prompt);
+        } catch (Exception e) {
+            log.error("调用AI模型失败", e);
+            throw new BizException("调用AI模型失败，请稍后重试");
+        }
 
         // ========== 7. 处理模型返回 ==========
+        AssistantMessage output = chatResponse.getResult().getOutput();
+        String content = output.getText();
+
         FlashCardResponseDTO response = new FlashCardResponseDTO();
         Map<Long, FlashCardResponseDTO.FlashCard> flashCardMap = new HashMap<>();
         List<Long> noteIds = new ArrayList<>();
-
-        if (!toolCalls.isEmpty()) {
-            // 模型调用了函数，解析 JSON
-            String arguments = toolCalls.get(0).arguments();
-            try {
-                JSONObject resultObj = new JSONObject(arguments);
-                JSONArray array = resultObj.getJSONArray("flashcards");
-
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject obj = array.getJSONObject(i);
-                    Long noteId = obj.getLong("noteId");
-
-                    // 构建 FlashCard 对象
-                    FlashCardResponseDTO.FlashCard card = new FlashCardResponseDTO.FlashCard();
-                    card.setQuestion(obj.getString("question"));
-                    card.setAnswer(obj.getString("answer"));
-
-                    // 填充 title、contentMd 等附加信息
-                    notes.stream()
-                            .filter(n -> n.getNoteId().equals(noteId))
-                            .findFirst()
-                            .ifPresent(n -> {
-                                card.setTitle(n.getTitle());
-                                card.setContentMd(n.getContentMd());
-                            });
-
-                    flashCardMap.put(noteId, card);
-                    noteIds.add(noteId);
-                }
-            } catch (JSONException e) {
-                log.warn("解析复习卡片 JSON 失败: {}", arguments, e);
-                throw new BizException("解析复习卡片 JSON 失败", e);
-            }
-        } else {
-            // 模型没调用函数，而是返回了自然语言 → 判为失败
-            String content = output.getText();
-            log.warn("模型未调用函数，而是返回了文本响应: {}", content);
-            throw new BizException("模型未能生成结构化的复习卡片，请重试");
+        // 调试代码 - 查看完整的响应结构
+        log.debug("完整响应: {}", chatResponse);
+        log.debug("结果元数据: {}", chatResponse.getResult().getMetadata());
+        log.debug("输出元数据: {}", output.getMetadata());
+        // 检查完成原因 - 从 ChatGenerationMetadata 中获取
+        ChatGenerationMetadata metadata = chatResponse.getResult().getMetadata();
+        String finishReason = metadata.getFinishReason();
+        if ("length".equals(finishReason)) {
+            log.warn("模型响应因长度限制被截断");
+            throw new BizException("响应过长，请减少笔记数量后重试");
+        } else if ("content_filter".equals(finishReason)) {
+            log.warn("内容被过滤器拦截");
+            throw new BizException("内容被安全过滤器拦截，请修改输入后重试");
         }
 
-        // ========== 8. 返回结果 ==========
+        // 检查是否有拒绝响应 - 通过检查内容是否包含拒绝相关的关键词
+        if (content != null &&
+                (content.toLowerCase().contains("sorry") ||
+                        content.toLowerCase().contains("cannot") ||
+                        content.toLowerCase().contains("unable") ||
+                        content.toLowerCase().contains("refuse"))) {
+            log.warn("模型可能拒绝生成复习卡片: {}", content);
+            throw new BizException("模型拒绝生成复习卡片: " + content);
+        }
+
+        // 解析JSON响应
+        try {
+            JSONObject resultObj = new JSONObject(content);
+            JSONArray array = resultObj.getJSONArray("flashcards");
+
+            // 验证和处理卡片
+            processFlashcards(array, notes, flashCardMap, noteIds);
+        } catch (JSONException e) {
+            log.warn("解析复习卡片 JSON 失败: {}", content, e);
+            throw new BizException("解析复习卡片 JSON 失败", e);
+        }
+
+// ========== 8. 返回结果 ==========
         response.setNoteIds(noteIds);
         response.setFlashCardDTOMap(flashCardMap);
         return response;
     }
+    /**
+     * 处理并验证从模型返回的复习卡片
+     */
+    private void processFlashcards(JSONArray rawFlashcards, List<NoteVectorDTO> notes,
+                                   Map<Long, FlashCardResponseDTO.FlashCard> flashCardMap,
+                                   List<Long> noteIds) {
+        Set<Long> processedNoteIds = new HashSet<>();
 
+        for (int i = 0; i < rawFlashcards.length(); i++) {
+            try {
+                JSONObject obj = rawFlashcards.getJSONObject(i);
+
+                // 验证必需字段
+                if (!obj.has("noteId") || !obj.has("question") || !obj.has("answer")) {
+                    log.warn("复习卡片缺少必需字段: {}", obj);
+                    continue;
+                }
+
+                Long noteId = obj.getLong("noteId");
+                String question = obj.getString("question")==null?"":obj.getString("question");
+                String answer = obj.getString("answer")==null?"":obj.getString("answer");
+
+                // 验证 noteId 是否存在于提供的笔记中
+                Optional<NoteVectorDTO> noteOpt = notes.stream()
+                        .filter(n -> n.getNoteId().equals(noteId))
+                        .findFirst();
+
+                if (noteOpt.isEmpty()) {
+                    log.warn("noteId {} 不存在于提供的笔记中", noteId);
+                    continue;
+                }
+                // 检查重复的 noteId
+                if (processedNoteIds.contains(noteId)) {
+                    log.warn("重复的 noteId: {}", noteId);
+                    continue;
+                }
+                // 验证内容是否为空
+                if (question.isEmpty() || answer.isEmpty()) {
+                    log.warn("问题或答案为空的复习卡片，noteId: {}", noteId);
+                    continue;
+                }
+
+                // 构建 FlashCard 对象
+                FlashCardResponseDTO.FlashCard card = new FlashCardResponseDTO.FlashCard();
+                card.setQuestion(question);
+                card.setAnswer(answer);
+                card.setTitle(noteOpt.get().getTitle());
+                card.setContentMd(noteOpt.get().getContentMd());
+
+                flashCardMap.put(noteId, card);
+                noteIds.add(noteId);
+                processedNoteIds.add(noteId);
+
+            } catch (JSONException e) {
+                log.warn("处理复习卡片时出错: {}", e.getMessage());
+            }
+        }
+
+        // 检查是否所有笔记都有对应的卡片
+        Set<Long> providedNoteIds = notes.stream()
+                .map(NoteVectorDTO::getNoteId)
+                .collect(Collectors.toSet());
+
+        if (!processedNoteIds.containsAll(providedNoteIds)) {
+            log.warn("部分笔记没有生成复习卡片: {}",
+                    providedNoteIds.stream()
+                            .filter(id -> !processedNoteIds.contains(id))
+                            .collect(Collectors.toList()));
+        }
+    }
     /**
      * 一键生成用户今日复习卡片  todo 待完成
      * @param userId 用户ID

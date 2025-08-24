@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.util.List;
 import java.util.Map;

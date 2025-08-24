@@ -5,11 +5,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 根据笔记生成发帖草稿 DTO
  */
 @Data
-public class PostDraftRequestDTO {
+public class PostDraftRequestDTO  implements Serializable {
 
     @NotNull(message = "笔记ID不能为空")
     private Long noteId;

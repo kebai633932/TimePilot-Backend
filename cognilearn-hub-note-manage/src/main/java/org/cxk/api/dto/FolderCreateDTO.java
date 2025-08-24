@@ -4,11 +4,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 新建文件夹 DTO
  */
 @Data
-public class FolderCreateDTO {
+public class FolderCreateDTO  implements Serializable {
 
     @Size(max = 255, message = "文件夹名称不能超过255个字符")
     @NotNull(message = "文件夹名称不能为空")

@@ -1,5 +1,6 @@
 package org.cxk.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cxk.domain.CustomUserDetailsService;
 import org.cxk.trigger.filter.JwtAuthenticationFilter;
 import org.cxk.trigger.filter.JwtLoginFilter;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -90,4 +92,20 @@ public class SecurityConfig {
 
         return http.build();
     }
+    //Spring Security 里的 Jackson 模块会检查：
+    //
+    //反序列化的类是否在允许的列表里（白名单）
+    //
+    //如果不在列表里，拒绝反序列化，抛出你看到的异常
+//    @Bean
+//    public ObjectMapper objectMapper() {
+//        //这里 activateDefaultTyping 会允许非 final 类型进行反序列化，如果你的 DTO 只在受信端使用，这个方式可行。
+//        ObjectMapper mapper = new ObjectMapper();
+//        // 获取 Security 的模块
+//        var modules = SecurityJackson2Modules.getModules(ClassLoader.getSystemClassLoader());
+//        mapper.registerModules(modules);
+//        // 手动把你的 DTO 加入允许列表
+//        mapper.activateDefaultTyping(mapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL);
+//        return mapper;
+//    }
 }

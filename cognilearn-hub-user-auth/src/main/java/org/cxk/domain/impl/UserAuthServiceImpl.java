@@ -21,7 +21,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.util.Collections;
 import java.util.List;

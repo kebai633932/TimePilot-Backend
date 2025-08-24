@@ -4,11 +4,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 向量搜索请求 DTO
  */
 @Data
-public class VectorSearchRequestDTO {
+public class VectorSearchRequestDTO  implements Serializable {
 
     @NotNull(message = "用户ID不能为空")
     private Long userId;

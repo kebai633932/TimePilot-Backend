@@ -4,13 +4,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author KJH
  * @description 笔记更新请求
  * @create 2025/8/14 13:30
  */
 @Data
-public class NoteUpdateDTO {
+public class NoteUpdateDTO  implements Serializable {
     @Size(max = 255, message = "笔记标题不能超过255个字符")
     @NotNull(message = "笔记标题不能为空")
     private String title;

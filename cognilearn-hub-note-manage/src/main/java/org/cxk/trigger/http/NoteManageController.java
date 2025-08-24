@@ -1,6 +1,6 @@
 package org.cxk.trigger.http;
 
-import api.response.Response;
+import org.cxk.api.response.Response;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,7 @@ import org.cxk.util.AuthenticationUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import types.enums.ResponseCode;
+import org.cxk.types.enums.ResponseCode;
 
 import java.util.List;
 import java.util.Map;

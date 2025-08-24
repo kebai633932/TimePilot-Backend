@@ -1,4 +1,4 @@
-package types.common;
+package org.cxk.types.common;
 
 /**
  * @author KJH

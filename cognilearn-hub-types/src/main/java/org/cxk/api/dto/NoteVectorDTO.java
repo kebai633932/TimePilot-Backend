@@ -1,7 +1,8 @@
-package api.dto;
+package org.cxk.api.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Date;
  * @create 2025/8/22 14:27
  */
 @Data
-public class NoteVectorDTO {
+public class NoteVectorDTO  implements Serializable {
 
     /** 笔记ID */
     private Long noteId;

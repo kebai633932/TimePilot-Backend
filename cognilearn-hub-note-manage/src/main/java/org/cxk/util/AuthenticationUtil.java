@@ -3,7 +3,7 @@ package org.cxk.util;
 import org.cxk.trigger.dto.CustomUserDTO;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 /**
  * @author KJH

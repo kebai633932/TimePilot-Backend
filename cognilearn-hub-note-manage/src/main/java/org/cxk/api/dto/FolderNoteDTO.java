@@ -2,6 +2,7 @@ package org.cxk.api.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * @create 2025/8/19 0:12
  */
 @Data
-public class FolderNoteDTO {
+public class FolderNoteDTO  implements Serializable {
     private Long folderId;
     private Long parentId;
     private String folderName;

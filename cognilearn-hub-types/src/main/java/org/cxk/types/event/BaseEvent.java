@@ -1,4 +1,4 @@
-package types.event;
+package org.cxk.types.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

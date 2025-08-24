@@ -3,11 +3,14 @@ package org.cxk.api.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.io.Serializable;
+
 /**
  * 更新文件夹 DTO
  */
 @Data
-public class FolderUpdateDTO {
+public class FolderUpdateDTO  implements Serializable {
     @NotNull(message = "文件夹ID不能为空")
     private Long folderId;
 //    @NotNull(message = "用户ID不能为空")

@@ -2,6 +2,7 @@ package org.cxk.api.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * @create 2025/8/21 18:10
  */
 @Data
-public class VectorSearchResponseDTO {
+public class VectorSearchResponseDTO  implements Serializable {
     private List<NoteInfo> noteInfoList;
 
 

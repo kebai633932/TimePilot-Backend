@@ -2,6 +2,7 @@ package org.cxk.api.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import java.util.Map;
  * @create 2025/8/21 18:10
  */
 @Data
-public class FlashCardResponseDTO {
+public class FlashCardResponseDTO  implements Serializable {
     private List<Long> noteIds;
     private Map<Long,FlashCard> flashCardDTOMap;
     @Data

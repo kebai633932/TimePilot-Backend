@@ -1,4 +1,4 @@
-package types.enums;
+package org.cxk.types.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

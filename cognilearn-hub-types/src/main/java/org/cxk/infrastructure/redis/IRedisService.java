@@ -1,4 +1,4 @@
-package infrastructure.redis;
+package org.cxk.infrastructure.redis;
 
 import org.redisson.api.*;
 

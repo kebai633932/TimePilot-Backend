@@ -13,7 +13,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.io.IOException;
 import java.io.InputStream;

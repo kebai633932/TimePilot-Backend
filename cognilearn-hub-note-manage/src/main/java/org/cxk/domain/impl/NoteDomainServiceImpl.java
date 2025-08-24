@@ -1,6 +1,7 @@
 package org.cxk.domain.impl;
 
-import api.dto.NoteVectorDTO;
+import org.cxk.api.INoteService;
+import org.cxk.api.dto.NoteVectorDTO;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.xiaoju.uemc.tinyid.client.utils.TinyId;
@@ -16,7 +17,7 @@ import org.cxk.util.MarkdownUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +32,10 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@DubboService(version = "1.0")
-public class NoteDomainServiceImpl implements INoteDomainService {
+@DubboService(interfaceClass = INoteService.class, version = "1.0")
+// learn: INoteDomainService 继承了 INoteService，
+// Dubbo 也不会自动认为它提供了 INoteService，因为 Dubbo 注册的时候只看接口全名，不看继承关系，不设定取第一个
+public class NoteDomainServiceImpl implements INoteDomainService, INoteService {
 
     @Resource
     private INoteRepository noteRepository;
@@ -48,8 +51,11 @@ public class NoteDomainServiceImpl implements INoteDomainService {
     @Override
     public Long createNote(Long userId, NoteCreateDTO dto) {
         // 1. 检查父文件夹是否存在
-        folderRepository.findByFolderIdAndUserId(dto.getFolderId(), userId)
-                .orElseThrow(() -> new BizException("父文件夹不存在或无权限"));
+        if(dto.getFolderId()!=0){
+            folderRepository.findByFolderIdAndUserId(dto.getFolderId(), userId)
+                    .orElseThrow(() -> new BizException("父文件夹不存在或无权限"));
+        }
+
 
         // 2. 生成新笔记 ID
         Long noteId = TinyId.nextId("note_create");

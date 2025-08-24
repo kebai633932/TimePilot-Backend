@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -69,11 +69,14 @@ public class NoteRepository implements INoteRepository {
             }
 
             transactionTemplate.execute(status -> {
-                // 2. 检查是否有父文件夹
-                if(null==folderDao.findByFolderIdAndUserId(folderId,userId)){
-                    status.setRollbackOnly();
-                    throw new BizException("目标文件夹不存在或无权限");
+                // 2. 检查是否有父文件夹  todo 把检查是否有父文件夹 抽取出来
+                if(folderId!=0){
+                    if(null==folderDao.findByFolderIdAndUserId(folderId,userId)){
+                        status.setRollbackOnly();
+                        throw new BizException("目标文件夹不存在或无权限");
+                    }
                 }
+
                 // 3. 插入笔记到数据库表
                 noteDao.insert(note);
 
@@ -157,10 +160,13 @@ public class NoteRepository implements INoteRepository {
 
             transactionTemplate.execute(status -> {
                 // 2. 检查是否有父文件夹
-                if(null==folderDao.findByFolderIdAndUserId(folderId,userId)){
-                    status.setRollbackOnly();
-                    throw new BizException("目标文件夹不存在或无权限");
+                if(folderId!=0){
+                    if(null==folderDao.findByFolderIdAndUserId(folderId,userId)){
+                        status.setRollbackOnly();
+                        throw new BizException("目标文件夹不存在或无权限");
+                    }
                 }
+
                 // 3. 移动笔记到数据库表
                 noteDao.moveByNoteId(note);
 
@@ -225,9 +231,11 @@ public class NoteRepository implements INoteRepository {
 
             transactionTemplate.execute(status -> {
                 // 2. 检查是否有父文件夹
-                if(null==folderDao.findByFolderIdAndUserId(folderId,userId)){
-                    status.setRollbackOnly();
-                    throw new BizException("目标文件夹不存在或无权限");
+                if(folderId!=0){
+                    if(null==folderDao.findByFolderIdAndUserId(folderId,userId)){
+                        status.setRollbackOnly();
+                        throw new BizException("目标文件夹不存在或无权限");
+                    }
                 }
                 // 3. 变更笔记到数据库表
                 noteDao.updateByNoteId(note);

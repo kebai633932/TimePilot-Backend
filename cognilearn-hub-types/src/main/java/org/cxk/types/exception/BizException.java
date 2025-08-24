@@ -1,8 +1,8 @@
-package types.exception;
+package org.cxk.types.exception;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import types.enums.ResponseCode;
+import org.cxk.types.enums.ResponseCode;
 
 /**
  * @author KJH

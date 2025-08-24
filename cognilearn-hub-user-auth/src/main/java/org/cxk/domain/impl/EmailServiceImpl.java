@@ -15,7 +15,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;

@@ -10,7 +10,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.util.List;
 import java.util.UUID;

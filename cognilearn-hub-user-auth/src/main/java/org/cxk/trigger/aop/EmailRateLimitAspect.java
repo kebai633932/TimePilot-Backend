@@ -1,6 +1,6 @@
 package org.cxk.trigger.aop;
 
-import api.response.Response;
+import org.cxk.api.response.Response;
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import types.enums.ResponseCode;
-import types.exception.BizException;
+import org.cxk.types.enums.ResponseCode;
+import org.cxk.types.exception.BizException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

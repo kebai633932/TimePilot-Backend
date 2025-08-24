@@ -1,6 +1,6 @@
 package org.cxk.trigger.http;
 
-import api.response.Response;
+import org.cxk.api.response.Response;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import types.enums.ResponseCode;
+import org.cxk.types.enums.ResponseCode;
 /*
 * ai聊天助手（RAG,AGENT），ai接口调用
 * */
@@ -40,7 +40,7 @@ public class AiController implements IAiApiService {
             return Response.error(ResponseCode.UN_ERROR, "生成失败");
         }
     }
-    // 一键生成今日复习卡片
+    // 一键生成今日复习卡片  todo: 未完成
     @PostMapping("/flashcards/today")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Response<FlashCardResponseDTO> generateTodayCards() {

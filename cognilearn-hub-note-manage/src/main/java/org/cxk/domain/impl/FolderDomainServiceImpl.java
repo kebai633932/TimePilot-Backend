@@ -10,7 +10,7 @@ import org.cxk.domain.model.entity.FolderEntity;
 import org.cxk.domain.repository.IFolderRepository;
 import org.cxk.domain.repository.INoteRepository;
 import org.springframework.stereotype.Service;
-import types.exception.BizException;
+import org.cxk.types.exception.BizException;
 
 import java.util.*;
 
