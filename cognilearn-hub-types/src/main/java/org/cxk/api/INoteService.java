@@ -1,6 +1,5 @@
 package org.cxk.api;
 
-import org.apache.dubbo.config.annotation.DubboService;
 import org.cxk.api.dto.NoteVectorDTO;
 
 import java.util.List;

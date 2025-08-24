@@ -1,20 +1,20 @@
 package org.cxk.trigger.http;
 
 
-import org.cxk.api.response.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.cxk.api.response.Response;
 import org.cxk.domain.IEmailService;
 import org.cxk.domain.ITokenService;
 import org.cxk.domain.IUserAuthService;
 import org.cxk.trigger.dto.*;
 import org.cxk.trigger.dto.type.VerificationChannelType;
-import org.cxk.util.JwtUtil;
-import org.springframework.web.bind.annotation.*;
 import org.cxk.types.enums.ResponseCode;
 import org.cxk.types.exception.BizException;
+import org.cxk.util.JwtUtil;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author KJH

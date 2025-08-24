@@ -1,6 +1,5 @@
 package org.cxk.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cxk.domain.CustomUserDetailsService;
 import org.cxk.trigger.filter.JwtAuthenticationFilter;
 import org.cxk.trigger.filter.JwtLoginFilter;
@@ -16,7 +15,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;

@@ -13,6 +13,7 @@ import org.cxk.trigger.dto.ResetPasswordDTO;
 import org.cxk.trigger.dto.UserDeleteDTO;
 import org.cxk.trigger.dto.UserRegisterDTO;
 import org.cxk.trigger.filter.RedisUserBloomFilter;
+import org.cxk.types.exception.BizException;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.RedisConnectionException;
@@ -21,7 +22,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.cxk.types.exception.BizException;
 
 import java.util.Collections;
 import java.util.List;

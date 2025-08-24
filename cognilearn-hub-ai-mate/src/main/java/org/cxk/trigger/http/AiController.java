@@ -1,6 +1,5 @@
 package org.cxk.trigger.http;
 
-import org.cxk.api.response.Response;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,14 +8,15 @@ import org.cxk.api.dto.FlashCardRequestDTO;
 import org.cxk.api.dto.FlashCardResponseDTO;
 import org.cxk.api.dto.VectorSearchRequestDTO;
 import org.cxk.api.dto.VectorSearchResponseDTO;
+import org.cxk.api.response.Response;
 import org.cxk.domain.IAiService;
+import org.cxk.types.enums.ResponseCode;
 import org.cxk.util.AuthenticationUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.cxk.types.enums.ResponseCode;
 /*
 * ai聊天助手（RAG,AGENT），ai接口调用
 * */

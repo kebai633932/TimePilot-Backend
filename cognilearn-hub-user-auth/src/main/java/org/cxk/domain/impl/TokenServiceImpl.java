@@ -5,12 +5,12 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.domain.ITokenService;
 import org.cxk.trigger.dto.TokenPairResponseDTO;
+import org.cxk.types.exception.BizException;
 import org.cxk.util.JwtUtil;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.cxk.types.exception.BizException;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,23 +1,22 @@
 package org.cxk.domain.impl;
 
-import org.cxk.api.INoteService;
-import org.cxk.api.dto.NoteVectorDTO;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.xiaoju.uemc.tinyid.client.utils.TinyId;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.cxk.api.INoteService;
 import org.cxk.api.dto.*;
 import org.cxk.domain.INoteDomainService;
 import org.cxk.domain.model.entity.NoteEntity;
 import org.cxk.domain.repository.IFolderRepository;
 import org.cxk.domain.repository.INoteRepository;
+import org.cxk.types.exception.BizException;
 import org.cxk.util.MarkdownUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.cxk.types.exception.BizException;
 
 import java.util.ArrayList;
 import java.util.List;

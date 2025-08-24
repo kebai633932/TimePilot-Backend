@@ -9,8 +9,8 @@ import org.cxk.domain.IFolderService;
 import org.cxk.domain.model.entity.FolderEntity;
 import org.cxk.domain.repository.IFolderRepository;
 import org.cxk.domain.repository.INoteRepository;
-import org.springframework.stereotype.Service;
 import org.cxk.types.exception.BizException;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 

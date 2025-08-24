@@ -1,17 +1,14 @@
 package org.cxk.domain.impl;
 
-import org.cxk.api.INoteService;
-import org.cxk.api.dto.NoteVectorDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.cxk.api.dto.FlashCardRequestDTO;
-import org.cxk.api.dto.FlashCardResponseDTO;
-import org.cxk.api.dto.VectorSearchRequestDTO;
-import org.cxk.api.dto.VectorSearchResponseDTO;
+import org.cxk.api.INoteService;
+import org.cxk.api.dto.*;
 import org.cxk.domain.IAiService;
 import org.cxk.domain.model.entity.NoteVectorEntity;
 import org.cxk.domain.repository.IAiRepository;
+import org.cxk.types.exception.BizException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,13 +23,11 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
-import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.openai.api.ResponseFormat;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.stereotype.Service;
-import org.cxk.types.exception.BizException;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -7,6 +7,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.domain.IEmailService;
 import org.cxk.trigger.aop.EmailRateLimit;
+import org.cxk.types.exception.BizException;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +16,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.cxk.types.exception.BizException;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;

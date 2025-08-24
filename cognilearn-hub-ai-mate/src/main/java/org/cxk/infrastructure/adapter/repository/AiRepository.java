@@ -7,6 +7,7 @@ import org.cxk.domain.model.entity.NoteVectorEntity;
 import org.cxk.domain.repository.IAiRepository;
 import org.cxk.infrastructure.adapter.dao.INoteVectorDao;
 import org.cxk.infrastructure.adapter.dao.po.NoteVector;
+import org.cxk.types.exception.BizException;
 import org.cxk.util.RedisKeyPrefix;
 import org.redisson.api.RBatch;
 import org.redisson.api.RSet;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.cxk.types.exception.BizException;
 
 import java.util.ArrayList;
 import java.util.List;

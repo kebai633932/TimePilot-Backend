@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.trigger.dto.CustomUserDTO;
 import org.cxk.trigger.dto.UserLoginDTO;
+import org.cxk.types.exception.BizException;
 import org.cxk.util.JwtUtil;
 import org.redisson.client.RedisConnectionException;
 import org.redisson.client.RedisTimeoutException;
@@ -19,7 +20,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.cxk.types.exception.BizException;
 
 import java.io.IOException;
 import java.util.*;

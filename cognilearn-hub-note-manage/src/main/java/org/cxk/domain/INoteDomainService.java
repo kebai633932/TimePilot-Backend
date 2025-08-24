@@ -1,6 +1,5 @@
 package org.cxk.domain;
 
-import org.cxk.api.INoteService;
 import org.cxk.api.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 

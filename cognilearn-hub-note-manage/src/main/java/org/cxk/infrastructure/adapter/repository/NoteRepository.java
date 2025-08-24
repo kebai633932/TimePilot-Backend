@@ -8,6 +8,7 @@ import org.cxk.domain.repository.INoteRepository;
 import org.cxk.infrastructure.adapter.dao.IFolderDao;
 import org.cxk.infrastructure.adapter.dao.INoteDao;
 import org.cxk.infrastructure.adapter.dao.po.Note;
+import org.cxk.types.exception.BizException;
 import org.cxk.util.RedisKeyPrefix;
 import org.redisson.api.RList;
 import org.redisson.api.RLock;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.cxk.types.exception.BizException;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
