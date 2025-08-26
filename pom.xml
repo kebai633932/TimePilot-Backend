@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>cognilearn-hub-learn-time-plan</module>
+        <module>cognilearn-hub-time-plan</module>
         <module>cognilearn-hub-note-manage</module>
         <module>cognilearn-hub-user-auth</module>
         <module>cognilearn-hub-app</module>

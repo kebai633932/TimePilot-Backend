@@ -18,10 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -196,6 +193,7 @@ public class NoteDomainServiceImpl implements INoteDomainService, INoteService {
         List<NoteEntity> noteEntities = noteRepository.findByNoteIds(batchIds);
         if (noteEntities == null || noteEntities.isEmpty()) {
             log.warn("没有批量查询近期修改但未向量化的笔记");
+            return Collections.emptyList(); // 返回空集合
         }
 
         // 2. 转换为 NoteVectorDTO
