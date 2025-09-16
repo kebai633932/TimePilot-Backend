@@ -12,11 +12,11 @@ import org.cxk.api.response.Response;
 import org.cxk.domain.IAiService;
 import org.cxk.types.enums.ResponseCode;
 import org.cxk.util.AuthenticationUtil;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 /*
 * ai聊天助手（RAG,AGENT），ai接口调用
 * */
@@ -28,7 +28,7 @@ public class AiController implements IAiApiService {
 
     private final IAiService aiService;
 
-    /** 向量检索（RAG 检索入口） */
+    /** 向量检索（RAG 检索入口）检索相似度最高的文档 */
     @PostMapping("/search")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Response<VectorSearchResponseDTO> search(@Valid @RequestBody VectorSearchRequestDTO dto) {
@@ -40,6 +40,23 @@ public class AiController implements IAiApiService {
             return Response.error(ResponseCode.UN_ERROR, "生成失败");
         }
     }
+    //AI 流式对话接口（带 RAG）
+    @GetMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public SseEmitter chatStream(@RequestParam String query) {
+        try {
+            Long userId = AuthenticationUtil.getCurrentUserId();
+            return aiService.chatWithStream(userId, query);
+        } catch (Exception e) {
+            log.error("SSE 对话流式生成失败, query={}", query, e);
+            throw new RuntimeException("对话失败");
+        }
+    }
+    //   chat/stop —— 终止流式生成
+    //   chat/history —— 历史记录
+    //   chat/session —— 会话管理
+
+
     // 一键生成今日复习卡片  todo: 未完成
     @PostMapping("/flashcards/today")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")

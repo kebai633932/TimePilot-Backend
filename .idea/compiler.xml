@@ -7,10 +7,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="cognilearn-hub-learn-time-plan" />
         <module name="cognilearn-hub-types" />
         <module name="cognilearn-hub-app" />
         <module name="cognilearn-hub-note-manage" />
+        <module name="cognilearn-hub-time-plan" />
         <module name="cognilearn-hub-user-auth" />
         <module name="cognilearn-hub-ai-mate" />
       </profile>
@@ -21,8 +21,8 @@
       <module name="cognilearn-hub-ai-mate" options="-parameters -parameters" />
       <module name="cognilearn-hub-app" options="-parameters -parameters" />
       <module name="cognilearn-hub-backend" options="-parameters -parameters" />
-      <module name="cognilearn-hub-learn-time-plan" options="-parameters -parameters" />
       <module name="cognilearn-hub-note-manage" options="-parameters -parameters" />
+      <module name="cognilearn-hub-time-plan" options="-parameters -parameters" />
       <module name="cognilearn-hub-types" options="-parameters -parameters" />
       <module name="cognilearn-hub-user-auth" options="-parameters -parameters" />
     </option>
