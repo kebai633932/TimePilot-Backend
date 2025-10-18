@@ -41,17 +41,17 @@ public class AiController implements IAiApiService {
         }
     }
     //AI 流式对话接口（带 RAG）
-    @GetMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public SseEmitter chatStream(@RequestParam String query) {
-        try {
-            Long userId = AuthenticationUtil.getCurrentUserId();
-            return aiService.chatWithStream(userId, query);
-        } catch (Exception e) {
-            log.error("SSE 对话流式生成失败, query={}", query, e);
-            throw new RuntimeException("对话失败");
-        }
-    }
+//    @GetMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+//    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+//    public SseEmitter chatStream(@RequestParam String query) {
+//        try {
+//            Long userId = AuthenticationUtil.getCurrentUserId();
+//            return aiService.chatWithStream(userId, query);
+//        } catch (Exception e) {
+//            log.error("SSE 对话流式生成失败, query={}", query, e);
+//            throw new RuntimeException("对话失败");
+//        }
+//    }
     //   chat/stop —— 终止流式生成
     //   chat/history —— 历史记录
     //   chat/session —— 会话管理
