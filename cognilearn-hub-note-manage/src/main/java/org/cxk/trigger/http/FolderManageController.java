@@ -35,6 +35,7 @@ public class FolderManageController{
      */
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<Long> createFolder(@Valid @RequestBody FolderCreateDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
@@ -51,6 +52,7 @@ public class FolderManageController{
      */
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<Boolean> updateFolder(@Valid @RequestBody FolderUpdateDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
@@ -67,6 +69,7 @@ public class FolderManageController{
      */
     @PostMapping("/delete")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<Boolean> deleteFolder(@Valid @RequestBody FolderDeleteDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();

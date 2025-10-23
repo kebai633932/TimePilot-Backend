@@ -34,6 +34,7 @@ public class NoteManageController{
      */
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<Long> createNote(@Valid @RequestBody NoteCreateDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
@@ -50,6 +51,7 @@ public class NoteManageController{
      */
     @PostMapping("/move")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<Boolean> moveNote(@Valid @RequestBody NoteMoveDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
@@ -65,6 +67,7 @@ public class NoteManageController{
      */
     @PostMapping("/update")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<Boolean> updateNote(@Valid @RequestBody NoteUpdateDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
@@ -81,6 +84,7 @@ public class NoteManageController{
      */
     @PostMapping("/delete")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<Boolean> deleteNote(@Valid @RequestBody NoteDeleteDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
@@ -98,6 +102,7 @@ public class NoteManageController{
      */
     @PostMapping("/listInfo")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<FolderNoteDTO> listFolderNotes() {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
@@ -114,9 +119,6 @@ public class NoteManageController{
         }
     }
 
-    /**
-     * todo 搜索笔记（ES做全文搜索） 以后再做
-     */
 //    @PostMapping("/search")
 //    @PreAuthorize("hasAnyRole('USER','ADMIN')")
 //    public Response<List<NoteDTO>> searchNotes(@RequestBody NoteSearchDTO dto) {
@@ -135,6 +137,7 @@ public class NoteManageController{
      */
     @PostMapping("/upload")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @Deprecated()
     public Response<String> uploadImage(@Valid @RequestParam("file") MultipartFile file) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
@@ -147,5 +150,4 @@ public class NoteManageController{
             return Response.error(ResponseCode.UN_ERROR, "上传失败");
         }
     }
-
 }
