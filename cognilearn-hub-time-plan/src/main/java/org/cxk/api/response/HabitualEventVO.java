@@ -6,11 +6,11 @@ import java.util.Date;
 
 /**
  * @author KJH
- * @description 突发事件视图对象
+ * @description 习惯性事件视图对象
  * @create 2025/10/26 09:17
  */
 @Data
-public class AdHocEventVO {
+public class HabitualEventVO {
 
     private Long eventId;
 
@@ -18,7 +18,7 @@ public class AdHocEventVO {
 
     private Integer quadrant;
 
-    private Date plannedStartTime;
+    private Date startDate;
 
-    private Date plannedEndTime;
+    private Date endDate;
 }

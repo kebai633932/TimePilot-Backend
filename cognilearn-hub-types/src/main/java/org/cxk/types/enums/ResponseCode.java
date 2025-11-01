@@ -13,7 +13,7 @@ import lombok.Getter;
 @Getter
 public enum ResponseCode {
 
-    SUCCESS("0000", "调用成功"),
+    SUCCESS("200", "调用成功"),
     UN_ERROR("0001", "调用失败"),
     ILLEGAL_PARAMETER("0002", "非法参数"),
     INDEX_DUP("0003", "唯一索引冲突"),

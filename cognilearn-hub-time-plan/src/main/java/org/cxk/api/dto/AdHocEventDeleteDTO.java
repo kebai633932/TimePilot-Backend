@@ -1,11 +1,7 @@
 package org.cxk.api.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 /**
  * @author KJH
  * @description 突发事件删除DTO

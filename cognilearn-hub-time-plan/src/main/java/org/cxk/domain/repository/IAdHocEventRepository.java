@@ -1,10 +1,9 @@
 package org.cxk.domain.repository;
 
 import org.cxk.domain.model.entity.AdHocEventEntity;
+import org.cxk.infrastructure.adapter.dao.po.AdHocEvent;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author KJH
@@ -14,72 +13,27 @@ import java.util.Optional;
 public interface IAdHocEventRepository {
 
     /**
-     * 根据事件ID查询
-     */
-    Optional<AdHocEventEntity> findByEventId(Long eventId);
-
-    /**
-     * 保存突发事件
-     */
-    void save(AdHocEventEntity eventEntity);
-
-    /**
-     * 删除突发事件
-     */
-    void delete(AdHocEventEntity eventEntity);
-
-    /**
-     * 查询用户的所有突发事件
+     * 根据用户ID查询突发事件列表
      */
     List<AdHocEventEntity> findByUserId(Long userId);
 
     /**
-     * 根据事件ID和用户ID查询
+     * 根据事件ID查询突发事件
      */
-    Optional<AdHocEventEntity> findByEventIdAndUserId(Long eventId, Long userId);
+    AdHocEvent findById(Long eventId);
 
     /**
-     * 根据状态查询用户的突发事件
+     * 新增突发事件
      */
-    List<AdHocEventEntity> findByUserIdAndStatus(Long userId, Integer status);
+    void save(AdHocEvent event);
 
     /**
-     * 查询今日待办的突发事件
+     * 更新突发事件
      */
-    List<AdHocEventEntity> findTodayEvents(Long userId);
+    void update(AdHocEvent event);
 
     /**
-     * 查询逾期未完成的突发事件
+     * 删除突发事件
      */
-    List<AdHocEventEntity> findOverdueEvents(Long userId);
-
-    /**
-     * 根据截止时间范围查询
-     */
-    List<AdHocEventEntity> findByDeadlineRange(Long userId, Date startTime, Date endTime);
-
-    /**
-     * 更新事件状态
-     */
-    void updateStatus(Long eventId, Long userId, Integer status);
-
-    /**
-     * 记录实际时间
-     */
-    void recordActualTime(Long eventId, Long userId, Date actualStartTime, Date actualEndTime, Double actualHours);
-
-    /**
-     * 检查时间冲突
-     */
-    boolean hasTimeConflict(Long userId, Date startTime, Date endTime, Long excludeEventId);
-
-    /**
-     * 获取用户突发事件统计
-     */
-    Object getUserAdHocEventStats(Long userId);
-
-    /**
-     * 关联习惯性事件
-     */
-    void linkToHabitualEvent(Long adHocEventId, Long habitualEventId);
+    void delete(Long userId, Long eventId);
 }

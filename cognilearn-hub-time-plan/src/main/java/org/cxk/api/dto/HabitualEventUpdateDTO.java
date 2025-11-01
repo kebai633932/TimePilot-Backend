@@ -1,12 +1,9 @@
 package org.cxk.api.dto;
 
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
-
-import jakarta.validation.constraints.*;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
+import java.util.Date;
 
 /**
  * @author KJH
@@ -31,34 +28,9 @@ public class HabitualEventUpdateDTO {
     @Max(value = 4, message = "四象限值必须在1-4之间")
     private Integer quadrant;
 
-    @NotNull(message = "精力等级不能为空")
-    @Min(value = 1, message = "精力等级必须在1-5之间")
-    @Max(value = 5, message = "精力等级必须在1-5之间")
-    private Integer energyLevel;
-
-    @NotNull(message = "持续时间不能为空")
-    @DecimalMin(value = "0.1", message = "持续时间必须大于0")
-    @DecimalMax(value = "24.0", message = "持续时间不能超过24小时")
-    private BigDecimal durationHours;
-
-    @NotNull(message = "优先级不能为空")
-    @Min(value = 1, message = "优先级必须在1-3之间")
-    @Max(value = 3, message = "优先级必须在1-3之间")
-    private Integer priority;
-
     @NotNull(message = "开始日期不能为空")
-    private LocalDate startDate;
+    private Date startDate;
 
-    private LocalDate endDate;
-
-    private String preferredTimeSlots;
-
-    private String repeatPattern;
-
-    @NotNull(message = "状态不能为空")
-    @Min(value = 0, message = "状态值必须在0-1之间")
-    @Max(value = 1, message = "状态值必须在0-1之间")
-    private Integer status;
-
-    private List<Long> tagIds;
+    @NotNull(message = "结束日期不能为空")
+    private Date endDate;
 }

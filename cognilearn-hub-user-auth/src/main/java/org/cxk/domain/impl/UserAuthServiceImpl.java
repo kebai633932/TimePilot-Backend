@@ -101,7 +101,7 @@ public class UserAuthServiceImpl implements IUserAuthService {
                     return true; // 成功
                 } catch (DuplicateKeyException e) {
                     status.setRollbackOnly();
-                    throw new BizException("用户名已存在");
+                    throw new BizException(e.getMessage());
                 } catch (Exception e) {
                     status.setRollbackOnly();
                     throw e;

@@ -12,10 +12,11 @@ import org.cxk.api.response.Response;
 import org.cxk.domain.IAiService;
 import org.cxk.types.enums.ResponseCode;
 import org.cxk.util.AuthenticationUtil;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /*
 * ai聊天助手（RAG,AGENT），ai接口调用

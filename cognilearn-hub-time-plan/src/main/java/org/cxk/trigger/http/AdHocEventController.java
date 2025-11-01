@@ -3,14 +3,19 @@ package org.cxk.trigger.http;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.cxk.api.dto.*;
+import org.cxk.api.dto.AdHocEventCreateDTO;
+import org.cxk.api.dto.AdHocEventDeleteDTO;
+import org.cxk.api.dto.AdHocEventUpdateDTO;
 import org.cxk.api.response.AdHocEventVO;
 import org.cxk.api.response.Response;
 import org.cxk.domain.IAdHocEventService;
 import org.cxk.types.enums.ResponseCode;
 import org.cxk.util.AuthenticationUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -74,69 +79,18 @@ public class AdHocEventController {
     }
 
     /**
-     * 查询突发事件列表
+     * 查看突发事件列表
      */
     @PostMapping("/list")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Response<List<AdHocEventVO>> listAdHocEvents(@Valid @RequestBody AdHocEventQueryDTO dto) {
+    public Response<List<AdHocEventVO>> listAdHocEvents() {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
-            List<AdHocEventVO> events = adHocEventService.listAdHocEvents(userId, dto);
-            return Response.success(events, "查询成功");
+            List<AdHocEventVO> list = adHocEventService.listUserAdHocEvents(userId);
+            return Response.success(list, "突发事件获取成功");
         } catch (Exception e) {
-            log.error("查询突发事件列表失败", e);
-            return Response.error(ResponseCode.UN_ERROR, "查询突发事件列表失败");
+            log.error("获取突发事件列表失败", e);
+            return Response.error(ResponseCode.UN_ERROR, "获取突发事件列表失败");
         }
     }
-    /**
-     * 更新事件状态
-     */
-    @PostMapping("/update-status")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Response<Boolean> updateEventStatus(@Valid @RequestBody EventStatusUpdateDTO dto) {
-        try {
-            Long userId = AuthenticationUtil.getCurrentUserId();
-            adHocEventService.updateEventStatus(userId, dto.getEventId(), dto.getStatus());
-            return Response.success(true, "事件状态更新成功");
-        } catch (Exception e) {
-            log.error("更新事件状态失败，id={}", dto.getEventId(), e);
-            return Response.error(ResponseCode.UN_ERROR, "更新事件状态失败");
-        }
-    }
-
-
-//    /**
-//     * 根据ID查询突发事件详情
-//     */
-//    @GetMapping("/{eventId}")
-//    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-//    public Response<AdHocEventVO> getAdHocEvent(@PathVariable Long eventId) {
-//        try {
-//            Long userId = AuthenticationUtil.getCurrentUserId();
-//            AdHocEventVO event = adHocEventService.getAdHocEventById(userId, eventId);
-//            return Response.success(event, "查询成功");
-//        } catch (Exception e) {
-//            log.error("查询突发事件失败，id={}", eventId, e);
-//            return Response.error(ResponseCode.UN_ERROR, "查询突发事件失败");
-//        }
-//    }
-
-
-
-//    /**
-//     * 记录实际开始/结束时间
-//     */
-//    @PostMapping("/record-actual-time")
-//    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-//    public Response<Boolean> recordActualTime(@Valid @RequestBody ActualTimeRecordDTO dto) {
-//        try {
-//            Long userId = AuthenticationUtil.getCurrentUserId();
-//            adHocEventService.recordActualTime(userId, dto.getEventId(),
-//                    dto.getActualStartTime(), dto.getActualEndTime(), dto.getActualHours());
-//            return Response.success(true, "时间记录成功");
-//        } catch (Exception e) {
-//            log.error("记录实际时间失败，id={}", dto.getEventId(), e);
-//            return Response.error(ResponseCode.UN_ERROR, "记录实际时间失败");
-//        }
-//    }
 }

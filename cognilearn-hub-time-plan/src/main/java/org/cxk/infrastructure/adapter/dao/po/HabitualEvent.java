@@ -30,9 +30,6 @@ public class HabitualEvent {
     /** 四象限：1-重要紧急, 2-重要不紧急, 3-紧急不重要, 4-不重要不紧急 */
     private Integer quadrant;
 
-    /** 精力消耗等级：1-5级 */
-    private Integer energyLevel;
-
     /** 持续时间(小时) */
     private BigDecimal durationHours;
 
