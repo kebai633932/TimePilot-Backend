@@ -3,7 +3,7 @@ package org.cxk.api.dto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * @author KJH
@@ -27,10 +27,10 @@ public class HabitualEventUpdateDTO {
     @Min(value = 1, message = "四象限值必须在1-4之间")
     @Max(value = 4, message = "四象限值必须在1-4之间")
     private Integer quadrant;
-
+    @NotBlank()
     @NotNull(message = "开始日期不能为空")
-    private Date startDate;
-
+    private Instant startDate;
+    @NotBlank()
     @NotNull(message = "结束日期不能为空")
-    private Date endDate;
+    private Instant endDate;
 }

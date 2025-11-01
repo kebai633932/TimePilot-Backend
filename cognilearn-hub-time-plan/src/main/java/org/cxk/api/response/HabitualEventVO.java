@@ -2,7 +2,7 @@ package org.cxk.api.response;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * @author KJH
@@ -18,7 +18,7 @@ public class HabitualEventVO {
 
     private Integer quadrant;
 
-    private Date startDate;
+    private Instant startDate;
 
-    private Date endDate;
+    private Instant endDate;
 }

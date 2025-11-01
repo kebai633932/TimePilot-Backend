@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * @author KJH
@@ -28,9 +28,9 @@ public class AdHocEventEntity {
     /** 四象限：1-重要紧急, 2-重要不紧急, 3-紧急不重要, 4-不重要不紧急 */
     private Integer quadrant;
     /** 计划开始时间 */
-    private Date plannedStartTime;
+    private Instant plannedStartTime;
     /** 计划结束时间 */
-    private Date plannedEndTime;
+    private Instant plannedEndTime;
 //    /** 实际开始时间 */
 //    private Date actualStartTime;
 //    /** 实际结束时间 */

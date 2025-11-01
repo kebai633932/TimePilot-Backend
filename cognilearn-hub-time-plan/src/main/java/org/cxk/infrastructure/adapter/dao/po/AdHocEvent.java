@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Date;
 
 /**
@@ -38,19 +39,19 @@ public class AdHocEvent {
     private BigDecimal actualHours;
 
     /** 计划开始时间 */
-    private Date plannedStartTime;
+    private Instant plannedStartTime;
 
     /** 计划结束时间 */
-    private Date plannedEndTime;
+    private Instant plannedEndTime;
 
     /** 实际开始时间 */
-    private Date actualStartTime;
+    private Instant actualStartTime;
 
     /** 实际结束时间 */
-    private Date actualEndTime;
+    private Instant actualEndTime;
 
     /** 截止时间 */
-    private Date deadline;
+    private Instant deadline;
 
     /** 状态：1-待开始, 2-进行中, 3-已完成, 4-已取消 */
     private Integer status;

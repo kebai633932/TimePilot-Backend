@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * @author KJH
@@ -28,9 +28,9 @@ public class HabitualEventEntity {
     /** 四象限：1-重要紧急, 2-重要不紧急, 3-紧急不重要, 4-不重要不紧急 */
     private Integer quadrant;
     /** 开始日期 */
-    private Date startDate;
+    private Instant startDate;
     /** 结束日期 */
-    private Date endDate;
+    private Instant endDate;
 //    /** 持续时间(小时) */
 //    private BigDecimal durationHours;
 //    /** 优先级：1-低, 2-中, 3-高 */

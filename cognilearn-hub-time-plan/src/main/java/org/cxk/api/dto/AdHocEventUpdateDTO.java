@@ -3,7 +3,7 @@ package org.cxk.api.dto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * @author KJH
@@ -25,8 +25,8 @@ public class AdHocEventUpdateDTO {
     @Min(value = 1, message = "四象限值必须在1-4之间")
     @Max(value = 4, message = "四象限值必须在1-4之间")
     private Integer quadrant;
-
-    private Date plannedStartTime;
-
-    private Date plannedEndTime;
+    @NotBlank()
+    private Instant plannedStartTime;
+    @NotBlank()
+    private Instant plannedEndTime;
 }

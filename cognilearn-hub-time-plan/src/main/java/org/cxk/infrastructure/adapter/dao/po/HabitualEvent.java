@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Date;
 
 /**
@@ -37,10 +38,10 @@ public class HabitualEvent {
     private Integer priority;
 
     /** 开始日期 */
-    private Date startDate;
+    private Instant startDate;
 
     /** 结束日期 */
-    private Date endDate;
+    private Instant endDate;
 
     /** 偏好时间段JSON */
     private String preferredTimeSlots;
