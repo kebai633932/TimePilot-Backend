@@ -5,12 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.dto.SmartDailyPlanGenerateDTO;
+import org.cxk.api.response.Response;
 import org.cxk.domain.IAdHocEventService;
 import org.cxk.domain.IHabitualEventService;
 import org.cxk.domain.model.entity.AdHocEventEntity;
 import org.cxk.domain.model.entity.HabitualEventEntity;
 import org.cxk.infrastructure.adapter.dao.po.AdHocEvent;
 import org.cxk.infrastructure.adapter.dao.po.HabitualEvent;
+import org.cxk.types.enums.ResponseCode;
 import org.cxk.util.AuthenticationUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +43,7 @@ public class TimePlanController {
      */
     @PostMapping("/smart-daily-plan")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<?> generateSmartDailyPlan(@Valid @RequestBody SmartDailyPlanGenerateDTO dto) {
+    public Response<?> generateSmartDailyPlan(@Valid @RequestBody SmartDailyPlanGenerateDTO dto) {
         Long userId = AuthenticationUtil.getCurrentUserId();
 
         try {
@@ -56,26 +58,22 @@ public class TimePlanController {
             // TODO: 保存规划结果，可调用 dailyPlanService.saveDailyPlan(userId, finalPlan)
 
             log.info("[智能规划成功] userId={}, 生成事件数={}", userId, plannedAdHocEvents.size());
-            return ResponseEntity.ok(plannedAdHocEvents);
+            return Response.success(plannedAdHocEvents, "智能规划成功");
 
         } catch (ScheduleConflictException e) {
             log.warn("[智能规划失败] userId={}, 冲突: {}", userId, e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body("智能规划失败：存在无法调解的时间冲突 -> " + e.getMessage());
+            return Response.error(ResponseCode.UN_ERROR, e.getMessage());
 
         } catch (Exception e) {
-            log.error("[智能规划异常] userId={}, err={}", userId, e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("智能规划发生异常：" + e.getMessage());
+            log.error("智能规划失败", e);
+            return Response.error(ResponseCode.UN_ERROR, "智能规划失败");
         }
     }
 
     // ========================== 调度算法部分 =============================== //
 
     /**
-     * 调度习惯事件
+     * 调度习惯事件 TODO
      */
     private List<PlannedEvent> scheduleHabitualEvents(
             List<AdHocEventEntity> adHocEvents, List<HabitualEventEntity> habitualEvents) {
@@ -88,6 +86,7 @@ public class TimePlanController {
                     e.getTitle(),
                     e.getPlannedStartTime(),
                     e.getPlannedEndTime(),
+                    e.getQuadrant(),
                     "adhoc"
             ));
         }
@@ -149,7 +148,7 @@ public class TimePlanController {
             }
 
             // 冲突调解完成或无冲突 -> 加入结果
-            result.add(new PlannedEvent(habit.getId(),habit.getTitle(), start, end, "habitual"));
+            result.add(new PlannedEvent(habit.getId(),habit.getTitle(), start, end,habit.getQuadrant(), "habitual"));
         }
 
         // 排序输出
@@ -178,12 +177,15 @@ public class TimePlanController {
         private Long eventId;
         private String title;
         private Instant startTime;
+
+        private Integer quadrant;
         private Instant endTime;
         private String type; // "adhoc" 或 "habitual"
 
-        public PlannedEvent(Long eventId, String title, Instant startTime, Instant endTime, String type) {
+        public PlannedEvent(Long eventId, String title, Instant startTime, Instant endTime,Integer quadrant, String type) {
             this.eventId = eventId;
             this.title = title;
+            this.quadrant=quadrant;
             this.startTime = startTime;
             this.endTime = endTime;
             this.type = type;
