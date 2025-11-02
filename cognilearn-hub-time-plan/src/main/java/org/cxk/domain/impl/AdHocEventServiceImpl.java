@@ -11,6 +11,7 @@ import org.cxk.infrastructure.adapter.dao.po.AdHocEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,5 +82,23 @@ public class AdHocEventServiceImpl implements IAdHocEventService {
             vo.setPlannedEndTime(e.getPlannedEndTime());
             return vo;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AdHocEventEntity> getTodayEvents(Long userId, Instant date) {
+        // 1️⃣ 计算当天起止时间
+        Instant startOfDay = date.truncatedTo(java.time.temporal.ChronoUnit.DAYS);
+        Instant endOfDay = startOfDay.plus(java.time.Duration.ofDays(1));
+
+        // 2️⃣ 查询当日事件（开始或结束时间在当天内）
+        List<AdHocEventEntity> all = adHocEventRepository.findByUserId(userId);
+        return all.stream()
+                .filter(e ->
+                        e.getPlannedStartTime() != null &&
+                                e.getPlannedEndTime() != null &&
+                                (e.getPlannedStartTime().isBefore(endOfDay) &&
+                                        e.getPlannedEndTime().isAfter(startOfDay))
+                )
+                .collect(Collectors.toList());
     }
 }

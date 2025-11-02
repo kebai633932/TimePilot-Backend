@@ -2,10 +2,13 @@ package org.cxk.domain;
 
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.cxk.api.dto.AdHocEventCreateDTO;
 import org.cxk.api.dto.AdHocEventUpdateDTO;
 import org.cxk.api.response.AdHocEventVO;
+import org.cxk.domain.model.entity.AdHocEventEntity;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -27,4 +30,6 @@ public interface IAdHocEventService {
     Long createAdHocEvent(Long userId, @Valid AdHocEventCreateDTO dto);
 
     List<AdHocEventVO> listUserAdHocEvents(Long userId);
+
+    List<AdHocEventEntity> getTodayEvents(Long userId, @NotNull(message = "查询日期不能为空") Instant date);
 }

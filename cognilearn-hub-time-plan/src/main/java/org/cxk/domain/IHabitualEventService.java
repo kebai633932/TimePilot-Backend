@@ -1,10 +1,13 @@
 package org.cxk.domain;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.cxk.api.dto.HabitualEventCreateDTO;
 import org.cxk.api.dto.HabitualEventUpdateDTO;
 import org.cxk.api.response.HabitualEventVO;
+import org.cxk.domain.model.entity.HabitualEventEntity;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -24,4 +27,6 @@ public interface IHabitualEventService {
     void updateHabitualEvent(Long userId, @Valid HabitualEventUpdateDTO dto);
 
     List<HabitualEventVO> listUserHabitualEvents(Long userId);
+
+    List<HabitualEventEntity> getTodayEvents(Long userId, @NotNull(message = "查询日期不能为空") Instant date);
 }
