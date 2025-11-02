@@ -18,7 +18,7 @@ public class HabitualEventVO {
 
     private Integer quadrant;
 
-    private Instant startDate;
+    private Instant startTime;
 
-    private Instant endDate;
+    private Instant endTime;
 }

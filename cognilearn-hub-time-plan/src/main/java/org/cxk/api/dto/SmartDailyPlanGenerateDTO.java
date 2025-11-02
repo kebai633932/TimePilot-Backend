@@ -13,5 +13,5 @@ import java.time.Instant;
 @Data
 public class SmartDailyPlanGenerateDTO {
     @NotNull(message = "查询日期不能为空")
-    private Instant Date;
+    private Instant date;
 }

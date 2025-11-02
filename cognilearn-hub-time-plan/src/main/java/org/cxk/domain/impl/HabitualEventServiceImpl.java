@@ -45,8 +45,8 @@ public class HabitualEventServiceImpl implements IHabitualEventService {
         event.setUserId(userId);
         event.setTitle(dto.getTitle());
         event.setQuadrant(dto.getQuadrant());
-        event.setStartDate(dto.getStartDate());
-        event.setEndDate(dto.getEndDate());
+        event.setStartDate(dto.getStartTime());
+        event.setEndDate(dto.getEndTime());
         habitualEventRepository.save(event);
         return event.getId();
     }
@@ -63,8 +63,8 @@ public class HabitualEventServiceImpl implements IHabitualEventService {
         event.setTitle(dto.getTitle());
         event.setDescription(dto.getDescription());
         event.setQuadrant(dto.getQuadrant());
-        event.setStartDate(dto.getStartDate());
-        event.setEndDate(dto.getEndDate());
+        event.setStartDate(dto.getStartTime());
+        event.setEndDate(dto.getEndTime());
 
         habitualEventRepository.update(event);
     }
@@ -80,8 +80,8 @@ public class HabitualEventServiceImpl implements IHabitualEventService {
             vo.setEventId(e.getId());
             vo.setTitle(e.getTitle());
             vo.setQuadrant(e.getQuadrant());
-            vo.setStartDate(e.getStartDate());
-            vo.setEndDate(e.getEndDate());
+            vo.setStartTime(e.getStartDate());
+            vo.setEndTime(e.getEndDate());
             return vo;
         }).collect(Collectors.toList());
     }

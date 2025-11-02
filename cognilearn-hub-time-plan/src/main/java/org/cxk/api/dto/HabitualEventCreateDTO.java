@@ -23,9 +23,7 @@ public class HabitualEventCreateDTO {
     @Max(value = 4, message = "四象限值必须在1-4之间")
     private Integer quadrant;
 
-    @NotBlank()
     @NotNull(message = "开始日期不能为空")
-    private Instant startDate;
-    @NotBlank()
-    private Instant endDate;
+    private Instant startTime;
+    private Instant endTime;
 }

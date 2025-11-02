@@ -84,6 +84,7 @@ public class TimePlanController {
         // 1️⃣ 先加入所有突发事件（假设这些已经确定）
         for (AdHocEventEntity e : adHocEvents) {
             result.add(new PlannedEvent(
+                    e.getId(),
                     e.getTitle(),
                     e.getPlannedStartTime(),
                     e.getPlannedEndTime(),
@@ -148,7 +149,7 @@ public class TimePlanController {
             }
 
             // 冲突调解完成或无冲突 -> 加入结果
-            result.add(new PlannedEvent(habit.getTitle(), start, end, "habitual"));
+            result.add(new PlannedEvent(habit.getId(),habit.getTitle(), start, end, "habitual"));
         }
 
         // 排序输出
@@ -173,24 +174,22 @@ public class TimePlanController {
 
 
     @Data
-    public static class PlannedEvent {
+    public class PlannedEvent {
+        private Long eventId;
         private String title;
         private Instant startTime;
         private Instant endTime;
-        private String type; // adhoc / habitual
+        private String type; // "adhoc" 或 "habitual"
 
-        public PlannedEvent(String title, Instant startTime, Instant endTime, String type) {
+        public PlannedEvent(Long eventId, String title, Instant startTime, Instant endTime, String type) {
+            this.eventId = eventId;
             this.title = title;
             this.startTime = startTime;
             this.endTime = endTime;
             this.type = type;
         }
-        public PlannedEvent() {
-            this.title = null;
-            this.startTime = null;
-            this.endTime = null;
-            this.type = null;
-        }
+
+        public PlannedEvent() {}
     }
 
     public static class ScheduleConflictException extends RuntimeException {

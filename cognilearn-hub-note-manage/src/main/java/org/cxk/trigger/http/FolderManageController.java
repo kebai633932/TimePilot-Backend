@@ -35,7 +35,6 @@ public class FolderManageController{
      */
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @Deprecated()
     public Response<Long> createFolder(@Valid @RequestBody FolderCreateDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();

@@ -10,6 +10,7 @@ import org.cxk.trigger.dto.CustomUserDTO;
 import org.cxk.types.exception.BizException;
 import org.cxk.util.JwtUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -84,6 +85,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // 7. 将认证信息写入上下文
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+//                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//                logger.info("SecurityContext Authentication: "+auth);
+//
+//                if (auth != null) {
+//                    logger.info("是否认证: "+auth.isAuthenticated());
+//                    logger.info("Principal: "+auth.getPrincipal());
+//                    logger.info("Authorities: "+auth.getAuthorities());
+//                } else {
+//                    logger.warn("SecurityContext 中没有 Authentication");
+//                }
             }
 
         } catch (Exception e) {

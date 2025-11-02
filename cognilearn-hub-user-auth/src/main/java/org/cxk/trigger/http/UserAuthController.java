@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user/auth")
 @AllArgsConstructor
-//todo ddd解耦
 public class UserAuthController {
 
     private final IUserAuthService userAuthService;

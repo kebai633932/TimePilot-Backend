@@ -44,7 +44,7 @@ public class JwtUtil {
     @Value("${jwt.rsa.public-key-path:classpath:public_key.pem}")
     private String publicKeyPath;
 
-    @Value("${jwt.access-token.expiration:10}")
+    @Value("${jwt.access-token.expiration:120}")
     private int accessTokenExpirationMinutes;
 
     @Value("${jwt.refresh-token.expiration:7}")

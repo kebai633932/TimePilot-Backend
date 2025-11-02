@@ -21,8 +21,6 @@ public class AdHocEventCreateDTO {
     @Min(value = 1, message = "四象限值必须在1-4之间")
     @Max(value = 4, message = "四象限值必须在1-4之间")
     private Integer quadrant;
-    @NotBlank()
     private Instant plannedStartTime;
-    @NotBlank()
     private Instant plannedEndTime;
 }
