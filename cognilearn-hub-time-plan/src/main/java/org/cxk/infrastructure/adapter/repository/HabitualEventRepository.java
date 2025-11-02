@@ -33,7 +33,8 @@ public class HabitualEventRepository implements IHabitualEventRepository {
             entity.setUserId(e.getUserId());
             entity.setTitle(e.getTitle());
             entity.setQuadrant(e.getQuadrant());
-            entity.setDescription(e.getDescription());
+            entity.setStartDate(e.getStartDate());
+            entity.setEndDate(e.getEndDate());
             return entity;
         }).collect(Collectors.toList());
     }
