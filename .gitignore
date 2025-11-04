@@ -1,6 +1,9 @@
 cognilearn-hub-app/src/main/resources/
 # 方式1：精确路径
+# 忽略环境配置文件
 cognilearn-hub-app/src/main/resources/application-dev.yml
 cognilearn-hub-app/src/main/resources/application-prod.yml
 cognilearn-hub-app/src/main/resources/application-test.yml
 
+# 忽略阿里云部署配置
+/docs/dev-ops/docker-compose-environment-aliyun.yml

@@ -248,5 +248,34 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-
+    <!-- 🚀 添加构建配置 -->
+    <build>
+        <plugins>
+            <!-- 在pom.xml中添加ProGuard混淆插件 -->
+<!--            <plugin>-->
+<!--                <groupId>com.github.wvengen</groupId>-->
+<!--                <artifactId>proguard-maven-plugin</artifactId>-->
+<!--                <version>2.6.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals><goal>proguard</goal></goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <obfuscate>true</obfuscate>-->
+<!--                    <options>-->
+<!--                        <option>-keep public class com.yourcompany.Main { public static void main(java.lang.String[]); }</option>-->
+<!--                    </options>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>org.cxk.Application</mainClass> <!-- 换成你自己的启动类路径 -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
