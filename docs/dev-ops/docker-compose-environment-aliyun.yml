@@ -1,87 +1,165 @@
-# 命令执行 docker-compose -f docker-compose-environment-aliyun.yml up -d
-# docker 代理和使用文档；https://bugstack.cn/md/road-map/docker.html
-version: '3.9'
+version: '3.8'
+
 services:
-  mysql:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/mysql:8.0.32
-    container_name: mysql
-    command: --default-authentication-plugin=mysql_native_password
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15
+    container_name: postgres
     restart: always
     environment:
-      TZ: Asia/Shanghai
-      MYSQL_ROOT_PASSWORD: 123456
+      POSTGRES_DB: cognilearn_hub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 13326932249
     ports:
-      - "13306:3306"
+      - "5432:5432"
     volumes:
-      - ./mysql/sql:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+      - ./init/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
     healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 15s
-    networks:
-      - my-network
-
-  # phpmyadmin https://hub.docker.com/_/phpmyadmin
-  phpmyadmin:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/phpmyadmin:5.2.1
-    container_name: phpmyadmin
-    hostname: phpmyadmin
-    ports:
-      - 8899:80
-    environment:
-      - PMA_HOST=mysql
-      - PMA_PORT=3306
-      - MYSQL_ROOT_PASSWORD=123qwe!@#QWE
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - my-network
-
-  # Redis
-  redis:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/redis:6.2
-    container_name: redis
-    restart: always
-    hostname: redis
-    privileged: true
-    ports:
-      - 16379:6379
-    volumes:
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
-    networks:
-      - my-network
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 15s
 
-  # RedisAdmin https://github.com/joeferner/redis-commander
-  # 账密 admin/admin
-  redis-admin:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/redis-commander:0.8.0
-    container_name: redis-admin
-    hostname: redis-commander
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: redis
     restart: always
     ports:
-      - 8081:8081
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-      - HTTP_USER=admin
-      - HTTP_PASSWORD=admin
-      - LANG=C.UTF-8
-      - LANGUAGE=C.UTF-8
-      - LC_ALL=C.UTF-8
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
     networks:
-      - my-network
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # RabbitMQ 消息队列
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  # Nacos 服务发现
+  nacos:
+    image: nacos/nacos-server:v2.2.3
+    container_name: nacos
+    restart: always
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: "false"
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - nacos_data:/home/nacos/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 🧠 Cognilearn Hub 主应用
+  cognilearn-app:
+    image: openjdk:17-jdk-slim
+    container_name: cognilearn-app
+    restart: always
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_OPTS: "-Xmx512m -Xms256m"
+    volumes:
+      - /root/cognilearn-hub-jar:/app
+      - ./logs:/app/logs
+      - ./config:/app/config
+    working_dir: /app
+    command: ["sh", "-c", "java $JAVA_OPTS -jar cognilearn-hub-app-1.0-SNAPSHOT.jar"]
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+      tinyid:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # 🔢 TinyID 服务（运行已有 jar）
+  tinyid:
+    image: openjdk:8-jre-slim
+    container_name: tinyid
+    restart: always
+    ports:
+      - "9999:9999"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS: "-Xmx256m -Xms128m"
+    volumes:
+      - /root/tinyid-jar:/app
+      - ./tinyid/logs:/app/logs
+    working_dir: /app
+    command: ["sh", "-c", "java $JAVA_OPTS -jar tinyid-server-0.1.0-SNAPSHOT.jar"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9999/tinyid/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  nacos_data:
 
 networks:
-  my-network:
+  app-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: "172.20.0.0/16"
