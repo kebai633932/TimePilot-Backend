@@ -111,113 +111,112 @@ public class EmailServiceImpl implements IEmailService {
         String content = getModernEmailTemplate(code, CODE_EXPIRY_MINUTES);
         sendEmail(email, subject, content);
     }
+
     /**
-     * 现代简洁风格的邮件模板（使用String.format版本）
+     * 现代简洁风格的邮件模板（优化版本）
      */
     private String getModernEmailTemplate(String code, int expiryMinutes) {
-        return String.format(
-                "<!DOCTYPE html>\\n" +
-                        "<html lang=\"zh-CN\">\\n" +
-                        "<head>\\n" +
-                        "    <meta charset=\"UTF-8\">\\n" +
-                        "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\\n" +
-                        "    <title>邮箱验证码</title>\\n" +
-                        "    <style>\\n" +
-                        "        body { \\n" +
-                        "            margin: 0; \\n" +
-                        "            padding: 0; \\n" +
-                        "            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\\n" +
-                        "            background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);\\n" +
-                        "            min-height: 100vh;\\n" +
-                        "            display: flex;\\n" +
-                        "            align-items: center;\\n" +
-                        "            justify-content: center;\\n" +
-                        "        }\\n" +
-                        "        .email-container {\\n" +
-                        "            background: white;\\n" +
-                        "            border-radius: 16px;\\n" +
-                        "            box-shadow: 0 20px 40px rgba(0,0,0,0.1);\\n" +
-                        "            padding: 40px;\\n" +
-                        "            max-width: 400px;\\n" +
-                        "            width: 90%%;\\n" +
-                        "            text-align: center;\\n" +
-                        "        }\\n" +
-                        "        .logo {\\n" +
-                        "            font-size: 24px;\\n" +
-                        "            font-weight: bold;\\n" +
-                        "            color: #667eea;\\n" +
-                        "            margin-bottom: 20px;\\n" +
-                        "        }\\n" +
-                        "        .title {\\n" +
-                        "            font-size: 24px;\\n" +
-                        "            font-weight: 600;\\n" +
-                        "            color: #2d3748;\\n" +
-                        "            margin: 20px 0 10px;\\n" +
-                        "        }\\n" +
-                        "        .description {\\n" +
-                        "            color: #718096;\\n" +
-                        "            font-size: 16px;\\n" +
-                        "            margin-bottom: 30px;\\n" +
-                        "            line-height: 1.5;\\n" +
-                        "        }\\n" +
-                        "        .verification-code {\\n" +
-                        "            background: #f7fafc;\\n" +
-                        "            border: 2px dashed #667eea;\\n" +
-                        "            border-radius: 12px;\\n" +
-                        "            padding: 20px;\\n" +
-                        "            margin: 30px 0;\\n" +
-                        "            font-size: 32px;\\n" +
-                        "            font-weight: bold;\\n" +
-                        "            letter-spacing: 4px;\\n" +
-                        "            color: #667eea;\\n" +
-                        "            font-family: 'Monaco', 'Menlo', monospace;\\n" +
-                        "        }\\n" +
-                        "        .info-box {\\n" +
-                        "            background: #edf2f7;\\n" +
-                        "            border-radius: 8px;\\n" +
-                        "            padding: 15px;\\n" +
-                        "            margin: 20px 0;\\n" +
-                        "        }\\n" +
-                        "        .info-text {\\n" +
-                        "            color: #4a5568;\\n" +
-                        "            font-size: 14px;\\n" +
-                        "            margin: 0;\\n" +
-                        "        }\\n" +
-                        "        .warning-text {\\n" +
-                        "            color: #e53e3e;\\n" +
-                        "            font-size: 14px;\\n" +
-                        "            font-weight: 500;\\n" +
-                        "        }\\n" +
-                        "        .footer {\\n" +
-                        "            margin-top: 30px;\\n" +
-                        "            padding-top: 20px;\\n" +
-                        "            border-top: 1px solid #e2e8f0;\\n" +
-                        "            color: #a0aec0;\\n" +
-                        "            font-size: 12px;\\n" +
-                        "        }\\n" +
-                        "    </style>\\n" +
-                        "</head>\\n" +
-                        "<body>\\n" +
-                        "    <div class=\"email-container\">\\n" +
-                        "        <div class=\"logo\">🚀 TimePilot</div>\\n" +
-                        "        <h1 class=\"title\">邮箱验证</h1>\\n" +
-                        "        <p class=\"description\">\\n" +
-                        "            您好！为了完成账户验证，请使用下面的验证码：\\n" +
-                        "        </p>\\n" +
-                        "        <div class=\"verification-code\">%s</div>\\n" +
-                        "        <div class=\"info-box\">\\n" +
-                        "            <p class=\"info-text\">⏰ 验证码有效期: %d 分钟</p>\\n" +
-                        "            <p class=\"warning-text\">⚠️ 请勿将验证码告诉他人</p>\\n" +
-                        "        </div>\\n" +
-                        "        <div class=\"footer\">\\n" +
-                        "            <p>此邮件由系统自动发送，请勿回复</p>\\n" +
-                        "            <p>© 2025 TimePilot. 保留所有权利</p>\\n" +
-                        "        </div>\\n" +
-                        "    </div>\\n" +
-                        "</body>\\n" +
-                        "</html>",
-                code, expiryMinutes
-        );
+        return String.format("""
+        <!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>邮箱验证码</title>
+            <style>
+                body { 
+                    margin: 0; 
+                    padding: 0; 
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .email-container {
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                    padding: 40px;
+                    max-width: 400px;
+                    width: 90%%;
+                    text-align: center;
+                }
+                .logo {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #667eea;
+                    margin-bottom: 20px;
+                }
+                .title {
+                    font-size: 24px;
+                    font-weight: 600;
+                    color: #2d3748;
+                    margin: 20px 0 10px;
+                }
+                .description {
+                    color: #718096;
+                    font-size: 16px;
+                    margin-bottom: 30px;
+                    line-height: 1.5;
+                }
+                .verification-code {
+                    background: #f7fafc;
+                    border: 2px dashed #667eea;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 30px 0;
+                    font-size: 32px;
+                    font-weight: bold;
+                    letter-spacing: 4px;
+                    color: #667eea;
+                    font-family: 'Monaco', 'Menlo', monospace;
+                }
+                .info-box {
+                    background: #edf2f7;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin: 20px 0;
+                }
+                .info-text {
+                    color: #4a5568;
+                    font-size: 14px;
+                    margin: 0;
+                }
+                .warning-text {
+                    color: #e53e3e;
+                    font-size: 14px;
+                    font-weight: 500;
+                }
+                .footer {
+                    margin-top: 30px;
+                    padding-top: 20px;
+                    border-top: 1px solid #e2e8f0;
+                    color: #a0aec0;
+                    font-size: 12px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="logo">🚀 TimePilot</div>
+                <h1 class="title">邮箱验证</h1>
+                <p class="description">
+                    您好！为了完成账户验证，请使用下面的验证码：
+                </p>
+                <div class="verification-code">%s</div>
+                <div class="info-box">
+                    <p class="info-text">⏰ 验证码有效期: %d 分钟</p>
+                    <p class="warning-text">⚠️ 请勿将验证码告诉他人</p>
+                </div>
+                <div class="footer">
+                    <p>此邮件由系统自动发送，请勿回复</p>
+                    <p>© 2025 TimePilot. 保留所有权利</p>
+                </div>
+            </div>
+        </body>
+        </html>""", code, expiryMinutes);
     }
 
     @Override
