@@ -49,7 +49,7 @@ public class EmailServiceImpl implements IEmailService {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-            helper.setFrom(new InternetAddress(fromEmail, "cognilearn-hub"));
+            helper.setFrom(new InternetAddress(fromEmail, "TimePilot"));
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(content, true);  // true 表示 HTML 内容
@@ -79,11 +79,11 @@ public class EmailServiceImpl implements IEmailService {
             bucket.set(code,Duration.ofSeconds(expirySeconds)); // 推荐
             log.debug("验证码存储成功，邮箱：{}，有效期：{}秒", email, expirySeconds);
 
-            // 3. 异步发送邮件（带指数退避重试）
-            CompletableFuture.runAsync(() -> sendEmailWithRetry(email, code));
-
+            // 3. 同步发送邮件（带指数退避重试）
+//            CompletableFuture.runAsync(() -> );
+            sendEmailWithRetry(email, code);
         } catch (Exception e) {
-            log.error("Redis存储异常，邮箱：{}，原因：{}", email, e.getMessage());
+            log.error("验证码发送失败，邮箱：{}，原因：{}", email, e.getMessage());
             throw new BizException("系统繁忙，请稍后重试");
             //todo 需要等qps上来，Redis 宕机验证码系统就不可用了，需要降级、兜底等
         }
@@ -106,16 +106,119 @@ public class EmailServiceImpl implements IEmailService {
     )
     @EmailRateLimit
     private void sendEmailWithRetry(String email, String code) {
-        String subject = "验证码通知";
-        String content = String.format(
-                "您好，您的验证码是：<strong>%s</strong>，有效期为%d分钟，请及时验证。",
-                code, CODE_EXPIRY_MINUTES
-        );
-
-        // 注意：sendEmail() 如果抛出异常，Spring Retry 会自动重试
+        String subject = "TimePilot - 邮箱验证码";
+        // 使用现代简洁风格的HTML模板
+        String content = getModernEmailTemplate(code, CODE_EXPIRY_MINUTES);
         sendEmail(email, subject, content);
     }
-
+    /**
+     * 现代简洁风格的邮件模板（使用String.format版本）
+     */
+    private String getModernEmailTemplate(String code, int expiryMinutes) {
+        return String.format(
+                "<!DOCTYPE html>\\n" +
+                        "<html lang=\"zh-CN\">\\n" +
+                        "<head>\\n" +
+                        "    <meta charset=\"UTF-8\">\\n" +
+                        "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\\n" +
+                        "    <title>邮箱验证码</title>\\n" +
+                        "    <style>\\n" +
+                        "        body { \\n" +
+                        "            margin: 0; \\n" +
+                        "            padding: 0; \\n" +
+                        "            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\\n" +
+                        "            background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);\\n" +
+                        "            min-height: 100vh;\\n" +
+                        "            display: flex;\\n" +
+                        "            align-items: center;\\n" +
+                        "            justify-content: center;\\n" +
+                        "        }\\n" +
+                        "        .email-container {\\n" +
+                        "            background: white;\\n" +
+                        "            border-radius: 16px;\\n" +
+                        "            box-shadow: 0 20px 40px rgba(0,0,0,0.1);\\n" +
+                        "            padding: 40px;\\n" +
+                        "            max-width: 400px;\\n" +
+                        "            width: 90%%;\\n" +
+                        "            text-align: center;\\n" +
+                        "        }\\n" +
+                        "        .logo {\\n" +
+                        "            font-size: 24px;\\n" +
+                        "            font-weight: bold;\\n" +
+                        "            color: #667eea;\\n" +
+                        "            margin-bottom: 20px;\\n" +
+                        "        }\\n" +
+                        "        .title {\\n" +
+                        "            font-size: 24px;\\n" +
+                        "            font-weight: 600;\\n" +
+                        "            color: #2d3748;\\n" +
+                        "            margin: 20px 0 10px;\\n" +
+                        "        }\\n" +
+                        "        .description {\\n" +
+                        "            color: #718096;\\n" +
+                        "            font-size: 16px;\\n" +
+                        "            margin-bottom: 30px;\\n" +
+                        "            line-height: 1.5;\\n" +
+                        "        }\\n" +
+                        "        .verification-code {\\n" +
+                        "            background: #f7fafc;\\n" +
+                        "            border: 2px dashed #667eea;\\n" +
+                        "            border-radius: 12px;\\n" +
+                        "            padding: 20px;\\n" +
+                        "            margin: 30px 0;\\n" +
+                        "            font-size: 32px;\\n" +
+                        "            font-weight: bold;\\n" +
+                        "            letter-spacing: 4px;\\n" +
+                        "            color: #667eea;\\n" +
+                        "            font-family: 'Monaco', 'Menlo', monospace;\\n" +
+                        "        }\\n" +
+                        "        .info-box {\\n" +
+                        "            background: #edf2f7;\\n" +
+                        "            border-radius: 8px;\\n" +
+                        "            padding: 15px;\\n" +
+                        "            margin: 20px 0;\\n" +
+                        "        }\\n" +
+                        "        .info-text {\\n" +
+                        "            color: #4a5568;\\n" +
+                        "            font-size: 14px;\\n" +
+                        "            margin: 0;\\n" +
+                        "        }\\n" +
+                        "        .warning-text {\\n" +
+                        "            color: #e53e3e;\\n" +
+                        "            font-size: 14px;\\n" +
+                        "            font-weight: 500;\\n" +
+                        "        }\\n" +
+                        "        .footer {\\n" +
+                        "            margin-top: 30px;\\n" +
+                        "            padding-top: 20px;\\n" +
+                        "            border-top: 1px solid #e2e8f0;\\n" +
+                        "            color: #a0aec0;\\n" +
+                        "            font-size: 12px;\\n" +
+                        "        }\\n" +
+                        "    </style>\\n" +
+                        "</head>\\n" +
+                        "<body>\\n" +
+                        "    <div class=\"email-container\">\\n" +
+                        "        <div class=\"logo\">🚀 TimePilot</div>\\n" +
+                        "        <h1 class=\"title\">邮箱验证</h1>\\n" +
+                        "        <p class=\"description\">\\n" +
+                        "            您好！为了完成账户验证，请使用下面的验证码：\\n" +
+                        "        </p>\\n" +
+                        "        <div class=\"verification-code\">%s</div>\\n" +
+                        "        <div class=\"info-box\">\\n" +
+                        "            <p class=\"info-text\">⏰ 验证码有效期: %d 分钟</p>\\n" +
+                        "            <p class=\"warning-text\">⚠️ 请勿将验证码告诉他人</p>\\n" +
+                        "        </div>\\n" +
+                        "        <div class=\"footer\">\\n" +
+                        "            <p>此邮件由系统自动发送，请勿回复</p>\\n" +
+                        "            <p>© 2025 TimePilot. 保留所有权利</p>\\n" +
+                        "        </div>\\n" +
+                        "    </div>\\n" +
+                        "</body>\\n" +
+                        "</html>",
+                code, expiryMinutes
+        );
+    }
 
     @Override
     public boolean verifyEmailCode(String email, String code) {
