@@ -11,5 +11,5 @@ import lombok.Data;
 public class AdHocEventDeleteDTO {
 
     @NotNull(message = "事件ID不能为空")
-    private Long eventId;
+    private Long id;
 }

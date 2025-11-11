@@ -17,15 +17,29 @@ import java.util.List;
 public interface IAdHocEventDao extends BaseMapper<AdHocEvent> {
 
     /**
-     * 查询用户的突发事件列表
+     * 查询用户的突发性事件列表（未删除）
      */
-    @Select("SELECT * FROM ad_hoc_events WHERE user_id = #{userId} AND is_deleted = false ORDER BY create_time DESC")
+    @Select("""
+            SELECT *
+            FROM ad_hoc_events
+            WHERE user_id = #{userId}
+              AND is_deleted = false
+            ORDER BY create_time DESC
+            """)
     List<AdHocEvent> selectByUserId(Long userId);
 
     /**
      * 根据用户 ID 和事件 ID 逻辑删除
      */
-    @Update("UPDATE ad_hoc_events SET is_deleted = true, delete_time = CURRENT_TIMESTAMP " +
-            "WHERE id = #{eventId} AND user_id = #{userId} AND is_deleted = false")
+    @Update("""
+            UPDATE ad_hoc_events
+            SET is_deleted = true,
+                delete_time = CURRENT_TIMESTAMP,
+                update_time = CURRENT_TIMESTAMP
+            WHERE id = #{eventId}
+              AND user_id = #{userId}
+              AND is_deleted = false
+            """)
     void deleteByUserIdAndId(Long userId, Long eventId);
 }
+

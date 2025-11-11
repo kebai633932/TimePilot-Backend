@@ -16,8 +16,14 @@ import java.util.List;
 public interface IHabitualEventDao extends BaseMapper<HabitualEvent> {
 
     /**
-     * 查询用户的所有习惯性事件
+     * 查询用户的所有习惯性事件（未删除）
      */
-    @Select("SELECT * FROM habitual_events WHERE user_id = #{userId} AND is_deleted = false ORDER BY create_time DESC")
+    @Select("""
+            SELECT *
+            FROM habitual_events
+            WHERE user_id = #{userId}
+              AND is_deleted = false
+            ORDER BY create_time DESC
+            """)
     List<HabitualEvent> selectByUserId(Long userId);
 }

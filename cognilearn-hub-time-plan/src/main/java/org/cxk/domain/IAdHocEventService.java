@@ -18,11 +18,6 @@ import java.util.List;
  */
 public interface IAdHocEventService {
 
-    /**
-     * 删除突发事件（逻辑删除）
-     *
-     * @return
-     */
     void deleteAdHocEvent(Long userId, Long eventId);
 
     void updateAdHocEvent(Long userId, @Valid AdHocEventUpdateDTO dto);

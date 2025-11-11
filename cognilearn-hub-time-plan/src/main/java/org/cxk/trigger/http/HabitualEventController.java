@@ -70,10 +70,10 @@ public class HabitualEventController {
     public Response<Boolean> deleteHabitualEvent(@Valid @RequestBody HabitualEventDeleteDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
-            habitualEventService.deleteHabitualEvent(userId, dto.getEventId());
+            habitualEventService.deleteHabitualEvent(userId, dto.getId());
             return Response.success(true, "日常事件删除成功");
         } catch (Exception e) {
-            log.error("删除日常事件失败，id={}", dto.getEventId(), e);
+            log.error("删除日常事件失败，id={}", dto.getId(), e);
             return Response.error(ResponseCode.UN_ERROR, "删除日常事件失败");
         }
     }

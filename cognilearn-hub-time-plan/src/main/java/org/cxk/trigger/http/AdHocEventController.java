@@ -59,7 +59,7 @@ public class AdHocEventController {
             adHocEventService.updateAdHocEvent(userId, dto);
             return Response.success(true, "突发事件更新成功");
         } catch (Exception e) {
-            log.error("更新突发事件失败，id={}", dto.getEventId(), e);
+            log.error("更新突发事件失败，id={}", dto.getId(), e);
             return Response.error(ResponseCode.UN_ERROR, "更新突发事件失败");
         }
     }
@@ -72,10 +72,10 @@ public class AdHocEventController {
     public Response<Boolean> deleteAdHocEvent(@Valid @RequestBody AdHocEventDeleteDTO dto) {
         try {
             Long userId = AuthenticationUtil.getCurrentUserId();
-            adHocEventService.deleteAdHocEvent(userId, dto.getEventId());
+            adHocEventService.deleteAdHocEvent(userId, dto.getId());
             return Response.success(true, "突发事件删除成功");
         } catch (Exception e) {
-            log.error("删除突发事件失败，id={}", dto.getEventId(), e);
+            log.error("删除突发事件失败，id={}", dto.getId(), e);
             return Response.error(ResponseCode.UN_ERROR, "删除突发事件失败");
         }
     }

@@ -17,9 +17,6 @@ import java.util.List;
  */
 public interface IHabitualEventService {
 
-    /**
-     * 删除日常事件（逻辑删除）
-     */
     void deleteHabitualEvent(Long userId, Long eventId);
 
     Long createHabitualEvent(Long userId, @Valid HabitualEventCreateDTO dto);
@@ -28,5 +25,4 @@ public interface IHabitualEventService {
 
     List<HabitualEventVO> listUserHabitualEvents(Long userId);
 
-    List<HabitualEventEntity> getTodayEvents(Long userId, @NotNull(message = "查询日期不能为空") Instant date);
 }

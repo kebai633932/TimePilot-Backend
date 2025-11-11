@@ -28,7 +28,6 @@ public class AdHocEventServiceImpl implements IAdHocEventService {
     /**
      * 删除突发事件
      *
-     * @return
      */
     @Override
     public void deleteAdHocEvent(Long userId, Long eventId) {
@@ -40,17 +39,52 @@ public class AdHocEventServiceImpl implements IAdHocEventService {
      */
     @Override
     public void updateAdHocEvent(Long userId, AdHocEventUpdateDTO dto) {
-        AdHocEvent event = adHocEventRepository.findById(dto.getEventId());
+        // 1️⃣ 查询事件
+        AdHocEvent event = adHocEventRepository.findById(dto.getId());
         Assert.notNull(event, "事件不存在");
         Assert.isTrue(event.getUserId().equals(userId), "无权修改他人事件");
 
-        event.setTitle(dto.getTitle());
-        event.setQuadrant(dto.getQuadrant());
-        event.setPlannedStartTime(dto.getPlannedStartTime());
-        event.setPlannedEndTime(dto.getPlannedEndTime());
+        // 2️⃣ 更新基本字段
+        if (dto.getTitle() != null) {
+            event.setTitle(dto.getTitle());
+        }
+        if (dto.getQuadrant() != null) {
+            event.setQuadrant(dto.getQuadrant());
+        }
+        if (dto.getPlannedStartTime() != null) {
+            event.setPlannedStartTime(dto.getPlannedStartTime());
+        }
+        if (dto.getPlannedEndTime() != null) {
+            event.setPlannedEndTime(dto.getPlannedEndTime());
+        }
+        if (dto.getDeadline() != null) {
+            event.setDeadline(dto.getDeadline());
+        }
+        if (dto.getDescription() != null) {
+            event.setDescription(dto.getDescription());
+        }
+        if (dto.getMeasurementUnit() != null) {
+            event.setMeasurementUnit(dto.getMeasurementUnit());
+        }
+        if (dto.getTargetQuantity() != null) {
+            event.setTargetQuantity(dto.getTargetQuantity());
+        }
+        if (dto.getCompletedQuantity() != null) {
+            event.setCompletedQuantity(dto.getCompletedQuantity());
+        }
+        if (dto.getStatus() != null) {
+            event.setStatus(dto.getStatus());
+        }
 
+        // 4️⃣ 数据校验（可选，比如开始时间 < 结束时间）
+        if (event.getPlannedStartTime() != null && event.getPlannedEndTime() != null) {
+            Assert.isTrue(!event.getPlannedStartTime().isAfter(event.getPlannedEndTime()), "计划开始时间不能晚于结束时间");
+        }
+
+        // 5️⃣ 持久化更新
         adHocEventRepository.update(event);
     }
+
 
     /**
      * 创建突发事件
@@ -58,11 +92,18 @@ public class AdHocEventServiceImpl implements IAdHocEventService {
     @Override
     public Long createAdHocEvent(Long userId, AdHocEventCreateDTO dto) {
         AdHocEvent event = new AdHocEvent();
+        //dto
         event.setUserId(userId);
         event.setTitle(dto.getTitle());
         event.setQuadrant(dto.getQuadrant());
         event.setPlannedStartTime(dto.getPlannedStartTime());
         event.setPlannedEndTime(dto.getPlannedEndTime());
+        event.setDeadline(dto.getDeadline());
+        event.setDescription(dto.getDescription());
+        event.setMeasurementUnit(dto.getMeasurementUnit());
+        event.setTargetQuantity(dto.getTargetQuantity());
+        event.setStatus(dto.getStatus());
+
         adHocEventRepository.save(event);
         return event.getId();
     }
@@ -75,14 +116,22 @@ public class AdHocEventServiceImpl implements IAdHocEventService {
         List<AdHocEventEntity> list = adHocEventRepository.findByUserId(userId);
         return list.stream().map(e -> {
             AdHocEventVO vo = new AdHocEventVO();
-            vo.setEventId(e.getId());
+            vo.setId(e.getId());
+            vo.setUserId(e.getUserId());
             vo.setTitle(e.getTitle());
             vo.setQuadrant(e.getQuadrant());
             vo.setPlannedStartTime(e.getPlannedStartTime());
             vo.setPlannedEndTime(e.getPlannedEndTime());
+            vo.setDeadline(e.getDeadline());
+            vo.setDescription(e.getDescription());
+            vo.setStatus(e.getStatus());
+            vo.setMeasurementUnit(e.getMeasurementUnit());
+            vo.setTargetQuantity(e.getTargetQuantity());
+            vo.setCompletedQuantity(e.getCompletedQuantity());
             return vo;
         }).collect(Collectors.toList());
     }
+
 
     @Override
     public List<AdHocEventEntity> getTodayEvents(Long userId, Instant date) {

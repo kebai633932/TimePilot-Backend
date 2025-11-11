@@ -11,6 +11,8 @@ import org.cxk.infrastructure.adapter.dao.po.HabitualEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,8 +47,16 @@ public class HabitualEventServiceImpl implements IHabitualEventService {
         event.setUserId(userId);
         event.setTitle(dto.getTitle());
         event.setQuadrant(dto.getQuadrant());
-        event.setStartDate(dto.getStartTime());
-        event.setEndDate(dto.getEndTime());
+        event.setRepeatPattern(dto.getRepeatPattern());
+        event.setRepeatInterval(dto.getRepeatInterval());
+        event.setEstimatedTime(dto.getEstimatedTime());
+        event.setDescription(dto.getDescription());
+        event.setPreferredTimeSlots(dto.getPreferredTimeSlots());
+        event.setMeasurementUnit(dto.getMeasurementUnit());
+        event.setTargetQuantity(dto.getTargetQuantity());
+        event.setCompletedQuantity(BigDecimal.ZERO); // 初始化为 0
+        event.setCompletionRate(BigDecimal.ZERO);   // 初始化为 0%
+
         habitualEventRepository.save(event);
         return event.getId();
     }
@@ -60,11 +70,48 @@ public class HabitualEventServiceImpl implements IHabitualEventService {
         Assert.notNull(event, "事件不存在");
         Assert.isTrue(event.getUserId().equals(userId), "无权修改他人事件");
 
-        event.setTitle(dto.getTitle());
-        event.setDescription(dto.getDescription());
-        event.setQuadrant(dto.getQuadrant());
-        event.setStartDate(dto.getStartTime());
-        event.setEndDate(dto.getEndTime());
+        // ===== 映射字段（仅更新有意义的部分）=====
+        if (dto.getTitle() != null) {
+            event.setTitle(dto.getTitle());
+        }
+        if (dto.getQuadrant() != null) {
+            event.setQuadrant(dto.getQuadrant());
+        }
+        if (dto.getDescription() != null) {
+            event.setDescription(dto.getDescription());
+        }
+        if (dto.getEstimatedTime() != null) {
+            event.setEstimatedTime(dto.getEstimatedTime());
+        }
+        if (dto.getPreferredTimeSlots() != null) {
+            event.setPreferredTimeSlots(dto.getPreferredTimeSlots());
+        }
+        if (dto.getRepeatPattern() != null) {
+            event.setRepeatPattern(dto.getRepeatPattern());
+        }
+        if (dto.getRepeatInterval() != null) {
+            event.setRepeatInterval(dto.getRepeatInterval());
+        }
+        if (dto.getMeasurementUnit() != null) {
+            event.setMeasurementUnit(dto.getMeasurementUnit());
+        }
+        if (dto.getTargetQuantity() != null) {
+            event.setTargetQuantity(dto.getTargetQuantity());
+        }
+        if (dto.getCompletedQuantity() != null) {
+            event.setCompletedQuantity(dto.getCompletedQuantity());
+        }
+
+        // 自动计算完成率
+        if (event.getTargetQuantity() != null
+                && event.getCompletedQuantity() != null
+                && event.getTargetQuantity().compareTo(BigDecimal.ZERO) > 0) {
+            event.setCompletionRate(
+                    event.getCompletedQuantity()
+                            .divide(event.getTargetQuantity(), 2, RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(100))
+            );
+        }
 
         habitualEventRepository.update(event);
     }
@@ -77,28 +124,22 @@ public class HabitualEventServiceImpl implements IHabitualEventService {
         List<HabitualEventEntity> list = habitualEventRepository.findByUserId(userId);
         return list.stream().map(e -> {
             HabitualEventVO vo = new HabitualEventVO();
-            vo.setEventId(e.getId());
+            vo.setId(e.getId());
+            vo.setUserId(e.getUserId());
             vo.setTitle(e.getTitle());
             vo.setQuadrant(e.getQuadrant());
-            vo.setStartTime(e.getStartDate());
-            vo.setEndTime(e.getEndDate());
+            vo.setEstimatedTime(e.getEstimatedTime());
+            vo.setDescription(e.getDescription());
+            vo.setPreferredTimeSlots(e.getPreferredTimeSlots());
+            vo.setRepeatPattern(e.getRepeatPattern());
+            vo.setRepeatInterval(e.getRepeatInterval());
+            vo.setCompletionRate(e.getCompletionRate());
+            vo.setMeasurementUnit(e.getMeasurementUnit());
+            vo.setTargetQuantity(e.getTargetQuantity());
+            vo.setCompletedQuantity(e.getCompletedQuantity());
+
             return vo;
         }).collect(Collectors.toList());
     }
 
-    @Override
-    public List<HabitualEventEntity> getTodayEvents(Long userId, Instant date) {
-        Instant startOfDay = date.truncatedTo(java.time.temporal.ChronoUnit.DAYS);
-        Instant endOfDay = startOfDay.plus(java.time.Duration.ofDays(1));
-
-        List<HabitualEventEntity> all = habitualEventRepository.findByUserId(userId);
-        return all.stream()
-                .filter(e ->
-                        e.getStartDate() != null &&
-                                e.getEndDate() != null &&
-                                (e.getStartDate().isBefore(endOfDay) &&
-                                        e.getEndDate().isAfter(startOfDay))
-                )
-                .collect(Collectors.toList());
-    }
 }

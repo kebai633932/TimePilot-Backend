@@ -13,5 +13,5 @@ import lombok.Data;
 public class HabitualEventDeleteDTO {
 
     @NotNull(message = "事件ID不能为空")
-    private Long eventId;
+    private Long id;
 }
