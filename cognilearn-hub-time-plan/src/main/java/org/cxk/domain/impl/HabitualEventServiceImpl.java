@@ -141,5 +141,11 @@ public class HabitualEventServiceImpl implements IHabitualEventService {
             return vo;
         }).collect(Collectors.toList());
     }
-
+    /**
+     * 查询用户习惯性事件列表
+     */
+    @Override
+    public List<HabitualEventEntity> listUserHabitualEventEntitys(Long userId) {
+        return habitualEventRepository.findByUserId(userId);
+    }
 }

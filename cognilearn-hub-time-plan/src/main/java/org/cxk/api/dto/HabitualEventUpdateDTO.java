@@ -28,25 +28,29 @@ public class HabitualEventUpdateDTO {
     @Max(value = 4, message = "四象限值必须在1-4之间")
     private Integer quadrant;
 
+    /** 重复模式：daily、weekly、monthly、custom */
+    @NotBlank(message = "重复模式不能为空")
+    @Pattern(regexp = "daily|weekly|monthly|custom", message = "重复模式必须是 daily、weekly、monthly 或 custom 之一")
+    private String repeatPattern;
+
+    /** 重复间隔（如每2天、每3周） */
+    @NotNull(message = "重复间隔不能为空")
+    @Min(value = 1, message = "重复间隔必须大于等于1")
+    private Integer repeatInterval;
+
+    /** 预计花费时间（小时） */
+    @NotNull(message = "预计花费时间不能为空")
+    @DecimalMin(value = "0.0", inclusive = false, message = "预计花费时间必须大于0")
+    @Digits(integer = 5, fraction = 2, message = "预计花费时间格式不正确")
+    private BigDecimal estimatedTime;
 
     /** 事件描述 */
     @Size(max = 1000, message = "事件描述长度不能超过1000个字符")
     private String description;
-    /** 预计花费时间（小时） */
-    @DecimalMin(value = "0.0", inclusive = false, message = "预计时间必须大于0")
-    private BigDecimal estimatedTime;
 
     /** 偏好时间段（JSON） */
     @Size(max = 2000, message = "偏好时间段字段过长")
     private String preferredTimeSlots;
-
-    /** 重复模式：daily、weekly、monthly、custom */
-    @Size(max = 50, message = "重复模式长度不能超过50个字符")
-    private String repeatPattern;
-
-    /** 重复间隔 */
-    @Min(value = 1, message = "重复间隔至少为1")
-    private Integer repeatInterval;
 
     /** 计量单位 */
     @Size(max = 50, message = "计量单位长度不能超过50个字符")

@@ -24,5 +24,5 @@ public interface IHabitualEventService {
     void updateHabitualEvent(Long userId, @Valid HabitualEventUpdateDTO dto);
 
     List<HabitualEventVO> listUserHabitualEvents(Long userId);
-
+    List<HabitualEventEntity> listUserHabitualEventEntitys(Long userId);
 }

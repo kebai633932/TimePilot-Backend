@@ -34,6 +34,12 @@ public class HabitualEventEntity {
     /** 预计花费时间（小时） */
     private BigDecimal estimatedTime;
 
+    /** 重复模式：daily、weekly、monthly、custom */
+    private String repeatPattern;
+
+    /** 重复间隔 */
+    private Integer repeatInterval;
+
     /** ===================== 🌱 下面为可选部分 ===================== */
 
     /** 事件描述 */
@@ -41,12 +47,6 @@ public class HabitualEventEntity {
 
     /** 偏好时间段（JSON） */
     private String preferredTimeSlots;
-
-    /** 重复模式：daily、weekly、monthly、custom */
-    private String repeatPattern;
-
-    /** 重复间隔 */
-    private Integer repeatInterval;
 
     /** 完成率百分比 */
     private BigDecimal completionRate;

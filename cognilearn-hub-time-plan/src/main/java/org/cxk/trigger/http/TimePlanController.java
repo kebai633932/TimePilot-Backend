@@ -2,7 +2,9 @@ package org.cxk.trigger.http;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.dto.SmartDailyPlanGenerateDTO;
 import org.cxk.api.response.Response;
@@ -10,24 +12,18 @@ import org.cxk.domain.IAdHocEventService;
 import org.cxk.domain.IHabitualEventService;
 import org.cxk.domain.model.entity.AdHocEventEntity;
 import org.cxk.domain.model.entity.HabitualEventEntity;
-import org.cxk.infrastructure.adapter.dao.po.AdHocEvent;
-import org.cxk.infrastructure.adapter.dao.po.HabitualEvent;
 import org.cxk.types.enums.ResponseCode;
 import org.cxk.util.AuthenticationUtil;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * @author KJH
- * @description 时间安排管理（智能规划）
- * @create 2025/10/26
+ * 智能规划每日时间安排
  */
 @Slf4j
 @RestController
@@ -39,30 +35,29 @@ public class TimePlanController {
     private final IHabitualEventService habitualEventService;
 
     /**
+     * todo 冲突时显示什么呢？
      * 智能规划当日时间安排
      */
     @PostMapping("/smart-daily-plan")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Response<?> generateSmartDailyPlan(@Valid @RequestBody SmartDailyPlanGenerateDTO dto) {
+
         Long userId = AuthenticationUtil.getCurrentUserId();
-
         try {
-            // 获取当天突发事件
-            List<AdHocEventEntity> adHocEvents = adHocEventService.getTodayEvents(userId,dto.getDate());
-            // 获取当天习惯事件
-            List<HabitualEventEntity> habitualEvents = habitualEventService.getTodayEvents(userId,dto.getDate());
+            // 1. 获取事件
+            List<AdHocEventEntity> adHocEvents = adHocEventService.getTodayEvents(userId, dto.getDate());
+            List<HabitualEventEntity> habitualEvents = habitualEventService.listUserHabitualEventEntitys(userId);
+            List<TimeRange> forbiddenSlots = new ArrayList<>();
 
-            // 智能调度突发事件 习惯事件
-            List<PlannedEvent> plannedAdHocEvents = scheduleHabitualEvents(adHocEvents,habitualEvents);
+            Instant dayStart = dto.getDate().atZone(ZoneId.systemDefault()).toLocalDate()
+                    .atStartOfDay(ZoneId.systemDefault()).toInstant();
+            forbiddenSlots.add(new TimeRange(dayStart,dayStart.plus(Duration.ofHours(7))));
+            forbiddenSlots.add(new TimeRange(dayStart.plus(Duration.ofHours(12)),dayStart.plus(Duration.ofHours(14))));
+            // 2. 计算智能规划结果
+            ScheduleResult scheduleResult = smartScheduleDailyPlan(dto.getDate(),adHocEvents,
+                    habitualEvents,forbiddenSlots );
 
-            // TODO: 保存规划结果，可调用 dailyPlanService.saveDailyPlan(userId, finalPlan)
-
-            log.info("[智能规划成功] userId={}, 生成事件数={}", userId, plannedAdHocEvents.size());
-            return Response.success(plannedAdHocEvents, "智能规划成功");
-
-        } catch (ScheduleConflictException e) {
-            log.warn("[智能规划失败] userId={}, 冲突: {}", userId, e.getMessage());
-            return Response.error(ResponseCode.UN_ERROR, e.getMessage());
+            return Response.success(scheduleResult, "规划成功");
 
         } catch (Exception e) {
             log.error("智能规划失败", e);
@@ -70,133 +65,429 @@ public class TimePlanController {
         }
     }
 
-    // ========================== 调度算法部分 =============================== //
+    // ===================================================================
+    //                          调度算法核心部分，todo 多种情况多种处理
+    // ===================================================================
+    //1.时间段分段，用对应记录是否使用
+    //2.事件优先级：紧急事件，优先级，固定时间
+    //3.这个是紧急事件固定时间，在空余的时间段，插入日常事件（可分多段），尽可能每个事件之间都有5分钟或以上的时间间隔
+    //4.在空余的时间段，优先选用事件之间的空闲，然后是事件最开始时间段与最后时间段的外面，但是不能在禁止时间段安排
+    //5.紧急事件冲突不管，依旧放入结果，日常事件没有时间段可以放入，则记录未完成放入的内容,放入redis做对应的补偿
+    //6.紧急事件冲突不管，依旧放入结果，返回结果有对应的冲突事件集的事件id
+    private ScheduleResult smartScheduleDailyPlan(
+            Instant date,
+            List<AdHocEventEntity> adHocEvents,
+            List<HabitualEventEntity> habitualEvents,
+            List<TimeRange> forbiddenSlots) { // 新增禁止时间段参数
 
-    /**
-     * 调度习惯事件 TODO
-     */
-    private List<PlannedEvent> scheduleHabitualEvents(
-            List<AdHocEventEntity> adHocEvents, List<HabitualEventEntity> habitualEvents) {
-        List<PlannedEvent> result = new ArrayList<>();
+        try {
+            // 参数验证
+            validateInputParameters(date, adHocEvents, habitualEvents);
 
-        // 1️⃣ 先加入所有突发事件（假设这些已经确定）
-        for (AdHocEventEntity e : adHocEvents) {
-            result.add(new PlannedEvent(
-                    e.getId(),
-                    e.getTitle(),
-                    e.getPlannedStartTime(),
-                    e.getPlannedEndTime(),
-                    e.getQuadrant(),
-                    "adhoc"
-            ));
-        }
+            List<PlannedTask> results = new ArrayList<>();
+            List<Long> conflictIds = new ArrayList<>();
+            List<UnscheduledTask> unscheduledTasks = new ArrayList<>();
 
-        // 2️⃣ 对习惯事件按 quadrant 排序：优先安排重要紧急 → 紧急不重要 → 重要不紧急 → 不重要不紧急
-        habitualEvents.sort(Comparator.comparingInt(HabitualEventEntity::getQuadrant).reversed());
+            // 1. 构建统一任务列表
+            List<SchedulerTask> tasks = buildSchedulerTasks(adHocEvents, habitualEvents);
 
-        // 3️⃣ 遍历安排
-        for (HabitualEventEntity habit : habitualEvents) {
-            Instant start = habit.getStartDate();
-            Instant end = habit.getEndDate();
-            int quadrant = habit.getQuadrant();
-            boolean conflict = false;
+            // 2. 排序：突发事件优先，然后按优先级排序
+            tasks.sort(Comparator.comparing(SchedulerTask::isAdHoc).reversed()
+                    .thenComparing(SchedulerTask::getPriority));
 
-            // 检查与已有事件是否冲突
-            for (PlannedEvent existing : result) {
-                if (timeOverlap(start, end, existing.getStartTime(), existing.getEndTime())) {
-                    conflict = true;
-                    switch (quadrant) {
-                        case 1 -> { // 重要紧急
-                            throw new ScheduleConflictException
-                                    ("【重要紧急】事件 [" +habit.getTitle() + "] 与 [" + existing.getTitle() + "] 冲突，无法自动调解");
-                        }
-                        case 3, 4 -> { // 不重要，尝试前后调整
-                            Instant beforeSlotEnd = existing.getStartTime().minus(java.time.Duration.ofMinutes(5));
-                            Instant afterSlotStart = existing.getEndTime().plus(java.time.Duration.ofMinutes(5));
+            // 3. 当天时间段初始化
+            List<TimeSlot> timeSlots = initializeTimeSlots(date);
 
-                            long availableBefore = DurationMinutes(beforeSlotEnd, start);
-                            long availableAfter = DurationMinutes(end, afterSlotStart);
-
-                            if (availableBefore >= 15) {
-                                // 可以提前安排
-                                end = beforeSlotEnd;
-                                conflict = false;
-                            } else if (availableAfter >= 15) {
-                                // 可以延后安排
-                                start = afterSlotStart;
-                                conflict = false;
-                            } else {
-                                throw new ScheduleConflictException("【不重要】事件 [" + habit.getTitle() + "] 没有足够时间可调整");
-                            }
-                        }
-
-                        case 2 -> { // 重要不紧急：缩短时长（保留前半）
-                            long totalDuration = DurationMinutes(start, end);
-                            Instant newEnd = start.plus(java.time.Duration.ofMinutes(Math.max(15, totalDuration / 2)));
-
-                            if (!timeOverlap(start, newEnd, existing.getStartTime(), existing.getEndTime())) {
-                                end = newEnd;
-                                conflict = false;
-                            } else {
-                                throw new ScheduleConflictException("【重要不紧急】事件 [" + habit.getTitle() + "] 无法缩短以避免冲突");
-                            }
-                        }
-
-                    }
-                    if (conflict) break;
+            // 3.1 标记禁止时间段
+            if (forbiddenSlots != null && !forbiddenSlots.isEmpty()) {
+                for (TimeRange forbidden : forbiddenSlots) {
+                    markSlotsUsed(timeSlots, forbidden.getStart(), forbidden.getEnd());
                 }
             }
 
-            // 冲突调解完成或无冲突 -> 加入结果
-            result.add(new PlannedEvent(habit.getId(),habit.getTitle(), start, end,habit.getQuadrant(), "habitual"));
+            // 4. 优化调度：按照时间段优先级调度
+            scheduleTasksOptimized(tasks, timeSlots, results, conflictIds, unscheduledTasks);
+
+            // 5. Redis补偿机制
+            if (!unscheduledTasks.isEmpty()) {
+                compensateToRedis(unscheduledTasks);
+            }
+
+            return ScheduleResult.builder()
+                    .plannedTasks(results)
+                    .conflictTaskIds(conflictIds)
+                    .unscheduledTasks(unscheduledTasks)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("智能日程调度失败", e);
+            throw new ScheduleException("日程调度执行失败", e);
+        }
+    }
+
+    /**
+     * 优化调度策略：优先使用事件间的空闲时间
+     */
+    private void scheduleTasksOptimized(List<SchedulerTask> tasks, List<TimeSlot> timeSlots,
+                                        List<PlannedTask> results, List<Long> conflictIds,
+                                        List<UnscheduledTask> unscheduledTasks) {
+
+        for (SchedulerTask task : tasks) {
+            if (task.getFixedStart() != null && task.getFixedEnd() != null) {
+                // 固定时间任务（突发事件）
+                if (isConflict(results, task.getFixedStart(), task.getFixedEnd())) {
+                    conflictIds.add(task.getId());
+                    log.warn("突发事件冲突: {}", task.getTitle());
+                }
+                results.add(toPlannedTask(task, task.getFixedStart(), task.getFixedEnd()));
+                markSlotsUsed(timeSlots, task.getFixedStart(), task.getFixedEnd());
+                continue;
+            }
+
+            // 普通任务（日常事件），按优化策略调度
+            scheduleHabitualTask(task, timeSlots, results, unscheduledTasks);
+        }
+    }
+
+    /**
+     * 调度日常事件的优化策略 todo 偏爱时间段，重复模式
+     */
+    private void scheduleHabitualTask(SchedulerTask task, List<TimeSlot> timeSlots,
+                                      List<PlannedTask> results, List<UnscheduledTask> unscheduledTasks) {
+
+        BigDecimal remainingHours = task.getDurationHours();
+        List<PlannedTask> taskParts = new ArrayList<>();
+
+        // 按时间段优先级排序：优先使用事件间的空闲   todo 这里是所有往前排
+        List<TimeSlot> sortedSlots = timeSlots.stream()
+                .filter(slot -> !slot.isUsed())
+                .sorted(this::compareTimeSlots)
+                .toList();
+
+        for (TimeSlot slot : sortedSlots) {
+            if (remainingHours.compareTo(BigDecimal.ZERO) <= 0) break;
+
+            Duration slotDuration = Duration.between(slot.getStart(), slot.getEnd());
+            double slotHours = slotDuration.toMinutes() / 60.0;
+
+            if (slotHours < MIN_TASK_DURATION_HOURS) continue; // 最小任务时间过滤
+
+            double useHours = Math.min(remainingHours.doubleValue(), slotHours);
+            Instant taskStart = slot.getStart();
+            Instant taskEnd = taskStart.plus(Duration.ofMinutes((long) (useHours * 60)));
+
+            PlannedTask partTask = toPlannedTask(task, taskStart, taskEnd);
+            taskParts.add(partTask);
+
+            // 保留5分钟间隔
+            Instant endWithBuffer = taskEnd.plus(Duration.ofMinutes(BUFFER_MINUTES));
+            markSlotsUsed(timeSlots, taskStart, endWithBuffer);
+
+            remainingHours = remainingHours.subtract(BigDecimal.valueOf(useHours));
         }
 
-        // 排序输出
-        result.sort(Comparator.comparing(PlannedEvent::getStartTime));
-        return result;
+        if (!taskParts.isEmpty()) {
+            results.addAll(taskParts);
+        }
+
+        if (remainingHours.compareTo(BigDecimal.ZERO) > 0) {
+            log.warn("日常事件 {} 时间不足，剩余 {} 小时未排", task.getTitle(), remainingHours);
+            unscheduledTasks.add(UnscheduledTask.builder()
+                    .taskId(task.getId())
+                    .title(task.getTitle())
+                    .remainingHours(remainingHours)
+                    .originalDuration(task.getDurationHours())
+                    .scheduledHours(task.getDurationHours().subtract(remainingHours))
+                    .build());
+        }
     }
 
     /**
-     * 判断两个时间段是否重叠
+     * 时间段优先级比较：优先选择较小的时间段（事件间空闲） todo 优化
      */
-    private boolean timeOverlap(Instant start1, Instant end1, Instant start2, Instant end2) {
-        // start1 < end2 && end1 > start2 表示有交集
-        return start1.isBefore(end2) && end1.isAfter(start2);
+    private int compareTimeSlots(TimeSlot slot1, TimeSlot slot2) {
+        Duration duration1 = Duration.between(slot1.getStart(), slot1.getEnd());
+        Duration duration2 = Duration.between(slot2.getStart(), slot2.getEnd());
+
+        // 优先选择较短的时间段（更可能是事件间的空闲）
+        int durationCompare = duration1.compareTo(duration2);
+        if (durationCompare != 0) {
+            return durationCompare;
+        }
+
+        // 时间段相同时，优先选择较早的
+        return slot1.getStart().compareTo(slot2.getStart());
     }
 
     /**
-     * 计算两个时间点之间的分钟数
+     * Redis补偿机制 todo 使用redis服务
      */
-    private long DurationMinutes(Instant start, Instant end) {
-        return java.time.Duration.between(start, end).toMinutes();
+    private void compensateToRedis(List<UnscheduledTask> unscheduledTasks) {
+        try {
+//            String redisKey = generateRedisKey();
+//
+//            // 构建Redis数据
+//            Map<String, Object> compensationData = unscheduledTasks.stream()
+//                    .collect(Collectors.toMap(
+//                            task -> "task_" + task.getTaskId(),
+//                            task -> Map.of(
+//                                    "title", task.getTitle(),
+//                                    "remainingHours", task.getRemainingHours(),
+//                                    "originalDuration", task.getOriginalDuration(),
+//                                    "scheduledHours", task.getScheduledHours(),
+//                                    "timestamp", System.currentTimeMillis()
+//                            )
+//                    ));
+//
+//            // 存储到Redis
+////            redisTemplate.opsForHash().putAll(redisKey, compensationData);
+////            redisTemplate.expire(redisKey, Duration.ofDays(7)); // 7天过期
+//
+//            log.info("未完成任务已补偿到Redis: {} 个任务", unscheduledTasks.size());
+
+        } catch (Exception e) {
+            log.error("Redis补偿失败", e);
+            // Redis失败不应该影响主要逻辑，可以记录但不抛出异常
+        }
     }
 
+    /**
+     * 参数验证
+     */
+    private void validateInputParameters(Instant date, List<AdHocEventEntity> adHocEvents,
+                                         List<HabitualEventEntity> habitualEvents) {
+        if (date == null) {
+            throw new IllegalArgumentException("日期参数不能为空");
+        }
+
+        if (adHocEvents == null) {
+            adHocEvents = new ArrayList<>();
+        }
+
+        if (habitualEvents == null) {
+            habitualEvents = new ArrayList<>();
+        }
+
+        // 验证事件数据完整性
+        adHocEvents.forEach(event -> {
+            if (event.getId() == null || event.getTitle() == null) {
+                throw new IllegalArgumentException("突发事件数据不完整");
+            }
+        });
+
+        habitualEvents.forEach(event -> {
+            if (event.getId() == null || event.getTitle() == null ||
+                    event.getEstimatedTime() == null || event.getEstimatedTime().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("日常事件数据不完整或时间无效");
+            }
+        });
+    }
+
+    /**
+     * 构建调度任务列表
+     */
+    private List<SchedulerTask> buildSchedulerTasks(List<AdHocEventEntity> adHocEvents,
+                                                    List<HabitualEventEntity> habitualEvents) {
+        List<SchedulerTask> tasks = new ArrayList<>();
+
+        adHocEvents.forEach(e -> tasks.add(SchedulerTask.builder()
+                .id(e.getId())
+                .title(e.getTitle())
+                .fixedStart(e.getPlannedStartTime())
+                .fixedEnd(e.getPlannedEndTime())
+                .isAdHoc(true)
+                .priority(e.getQuadrant())
+                .build()
+        ));
+
+        habitualEvents.forEach(e -> tasks.add(SchedulerTask.builder()
+                .id(e.getId())
+                .title(e.getTitle())
+                .durationHours(e.getEstimatedTime())
+                //todo 偏爱时间段
+                //todo 周期
+                .isHabitual(true)
+                .priority(e.getQuadrant())
+                .build()
+        ));
+
+        return tasks;
+    }
+
+    /**
+     * 初始化时间段
+     */
+    private List<TimeSlot> initializeTimeSlots(Instant date) {
+        Instant dayStart = date.atZone(ZoneId.systemDefault()).toLocalDate()
+                .atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant dayEnd = dayStart.plus(Duration.ofHours(24));
+
+        List<TimeSlot> timeSlots = new ArrayList<>();
+        timeSlots.add(TimeSlot.builder()
+                .start(dayStart)
+                .end(dayEnd)
+                .used(false)
+                .build());
+
+        return timeSlots;
+    }
+
+    private PlannedTask toPlannedTask(SchedulerTask task, Instant start, Instant end) {
+        return PlannedTask.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .startTime(start)
+                .endTime(end)
+                .type(task.isAdHoc() ? "ad_hoc" : "habitual")
+                .priority(task.getPriority())
+                .build();
+    }
+
+    private boolean isConflict(List<PlannedTask> results, Instant start, Instant end) {
+        return results.stream()
+                .anyMatch(t -> !(t.getEndTime().isBefore(start) || t.getStartTime().isAfter(end)
+                        || t.getEndTime().equals(start) || t.getStartTime().equals(end)));
+    }
+
+    /**
+     * 优化的时间段标记方法
+     */
+    private void markSlotsUsed(List<TimeSlot> slots, Instant start, Instant end) {
+        List<TimeSlot> newSlots = new ArrayList<>();
+
+        for (TimeSlot slot : slots) {
+            if (slot.isUsed()) {
+                newSlots.add(slot);
+                continue;
+            }
+
+            // 情况1: 完全不重叠
+            if (isNonOverlapping(slot, start, end)) {
+                newSlots.add(slot);
+                continue;
+            }
+
+            // 情况2: 部分或完全重叠，需要分割
+            splitAndAddSlot(newSlots, slot, start, end);
+        }
+
+        slots.clear();
+        slots.addAll(newSlots);
+    }
+
+    /**
+     * 检查是否不重叠
+     */
+    private boolean isNonOverlapping(TimeSlot slot, Instant start, Instant end) {
+        return slot.getEnd().isBefore(start) || slot.getEnd().equals(start)
+                || slot.getStart().isAfter(end) || slot.getStart().equals(end);
+    }
+
+    /**
+     * 分割时间段并添加到列表，todo 优化，怎么减少碎片，优化时间
+     */
+    private void splitAndAddSlot(List<TimeSlot> newSlots, TimeSlot slot, Instant start, Instant end) {
+        Instant slotStart = slot.getStart();
+        Instant slotEnd = slot.getEnd();
+
+        // 前段空闲
+        if (slotStart.isBefore(start)) {
+            newSlots.add(createTimeSlot(slotStart, start, false));
+        }
+
+        // 中间已使用段
+        Instant usedStart = slotStart.isAfter(start) ? slotStart : start;
+        Instant usedEnd = slotEnd.isBefore(end) ? slotEnd : end;
+        newSlots.add(createTimeSlot(usedStart, usedEnd, true));
+
+        // 后段空闲
+        if (slotEnd.isAfter(end)) {
+            newSlots.add(createTimeSlot(end, slotEnd, false));
+        }
+    }
+
+    /**
+     * 创建时间段
+     */
+    private TimeSlot createTimeSlot(Instant start, Instant end, boolean used) {
+        // 添加有效性检查
+        if (start.isAfter(end) || start.equals(end)) {
+            return null;
+        }
+        return TimeSlot.builder()
+                .start(start)
+                .end(end)
+                .used(used)
+                .build();
+    }
+
+    // 常量定义
+    private static final int BUFFER_MINUTES = 5;
+    private static final double MIN_TASK_DURATION_HOURS = 0.25; // 最小任务时间15分钟
+
+    @Builder
+    @Data
+    static class SchedulerTask {
+        private Long id;
+        private String title;
+        private BigDecimal durationHours; // 小时
+        private Instant fixedStart;   // 突发事件固定时间
+        private Instant fixedEnd;
+        private boolean isAdHoc;
+        private boolean isHabitual;
+        private Integer priority;
+    }
+
+    @Builder
+    @Data
+    static class TimeSlot {
+        private Instant start;
+        private Instant end;
+        private boolean used;
+    }
+
+    @Builder
+    @Data
+    static class TimeRange {
+        private Instant start;
+        private Instant end;
+    }
+
+    @Builder
+    @Data
+    static class UnscheduledTask {
+        private Long taskId;
+        private String title;
+        private BigDecimal remainingHours;
+        private BigDecimal originalDuration;
+        private BigDecimal scheduledHours;
+    }
+
+    @Builder
+    @Data
+    static class ScheduleResult {
+        private List<PlannedTask> plannedTasks;
+        private List<Long> conflictTaskIds;
+        private List<UnscheduledTask> unscheduledTasks;
+    }
 
     @Data
-    public class PlannedEvent {
-        private Long eventId;
+    @Builder
+    public static class PlannedTask {
+        private Long id;
         private String title;
         private Instant startTime;
-
-        private Integer quadrant;
         private Instant endTime;
-        private String type; // "adhoc" 或 "habitual"
-
-        public PlannedEvent(Long eventId, String title, Instant startTime, Instant endTime,Integer quadrant, String type) {
-            this.eventId = eventId;
-            this.title = title;
-            this.quadrant=quadrant;
-            this.startTime = startTime;
-            this.endTime = endTime;
-            this.type = type;
-        }
-
-        public PlannedEvent() {}
+        private String type;
+        private Integer priority;
     }
 
-    public static class ScheduleConflictException extends RuntimeException {
-        public ScheduleConflictException(String message) {
-            super(message);
+    /**
+     * 自定义异常类
+     */
+    public static class ScheduleException extends RuntimeException {
+        public ScheduleException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

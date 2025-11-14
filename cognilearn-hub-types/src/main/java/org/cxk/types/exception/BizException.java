@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.cxk.types.enums.ResponseCode;
 
+import java.io.Serial;
+
 /**
  * @author KJH
  * @description
@@ -13,6 +15,7 @@ import org.cxk.types.enums.ResponseCode;
 @Data
 public class BizException  extends RuntimeException {
 
+    @Serial
     private static final long serialVersionUID = 5317680961212299217L;
 
     /** 异常码 */
