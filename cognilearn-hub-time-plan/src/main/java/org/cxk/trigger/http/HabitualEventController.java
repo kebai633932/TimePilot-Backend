@@ -57,7 +57,7 @@ public class HabitualEventController {
             habitualEventService.updateHabitualEvent(userId, dto);
             return Response.success(true, "日常事件更新成功");
         } catch (Exception e) {
-            log.error("更新日常事件失败，id={}", dto.getEventId(), e);
+            log.error("更新日常事件失败，id={}", dto.getId(), e);
             return Response.error(ResponseCode.UN_ERROR, "更新日常事件失败");
         }
     }

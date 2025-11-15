@@ -25,17 +25,17 @@ public class HabitualEventCreateDTO {
     private Integer quadrant;
 
     /** 重复模式：daily、weekly、monthly、custom */
-    @NotBlank(message = "重复模式不能为空")
+//    @NotBlank(message = "重复模式不能为空")
     @Pattern(regexp = "daily|weekly|monthly|custom", message = "重复模式必须是 daily、weekly、monthly 或 custom 之一")
     private String repeatPattern;
 
     /** 重复间隔（如每2天、每3周） */
-    @NotNull(message = "重复间隔不能为空")
+//    @NotNull(message = "重复间隔不能为空")
     @Min(value = 1, message = "重复间隔必须大于等于1")
     private Integer repeatInterval;
 
     /** 预计花费时间（小时） */
-    @NotNull(message = "预计花费时间不能为空")
+//    @NotNull(message = "预计花费时间不能为空")
     @DecimalMin(value = "0.0", inclusive = false, message = "预计花费时间必须大于0")
     @Digits(integer = 5, fraction = 2, message = "预计花费时间格式不正确")
     private BigDecimal estimatedTime;

@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cxk.api.dto.SmartDailyPlanGenerateDTO;
 import org.cxk.api.response.Response;
@@ -14,13 +13,18 @@ import org.cxk.domain.model.entity.AdHocEventEntity;
 import org.cxk.domain.model.entity.HabitualEventEntity;
 import org.cxk.types.enums.ResponseCode;
 import org.cxk.util.AuthenticationUtil;
+import org.cxk.util.ClientDateTimeUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * 智能规划每日时间安排
@@ -33,7 +37,6 @@ public class TimePlanController {
 
     private final IAdHocEventService adHocEventService;
     private final IHabitualEventService habitualEventService;
-
     /**
      * todo 冲突时显示什么呢？
      * 智能规划当日时间安排
@@ -45,16 +48,15 @@ public class TimePlanController {
         Long userId = AuthenticationUtil.getCurrentUserId();
         try {
             // 1. 获取事件
-            List<AdHocEventEntity> adHocEvents = adHocEventService.getTodayEvents(userId, dto.getDate());
+            List<AdHocEventEntity> adHocEvents = adHocEventService.getTodayEvents(userId, dto.getDate(),dto.getClientTimeZone());
             List<HabitualEventEntity> habitualEvents = habitualEventService.listUserHabitualEventEntitys(userId);
             List<TimeRange> forbiddenSlots = new ArrayList<>();
 
-            Instant dayStart = dto.getDate().atZone(ZoneId.systemDefault()).toLocalDate()
-                    .atStartOfDay(ZoneId.systemDefault()).toInstant();
+            Instant dayStart = ClientDateTimeUtils.getClientDayStart(dto.getDate(),dto.getClientTimeZone());
             forbiddenSlots.add(new TimeRange(dayStart,dayStart.plus(Duration.ofHours(7))));
             forbiddenSlots.add(new TimeRange(dayStart.plus(Duration.ofHours(12)),dayStart.plus(Duration.ofHours(14))));
             // 2. 计算智能规划结果
-            ScheduleResult scheduleResult = smartScheduleDailyPlan(dto.getDate(),adHocEvents,
+            ScheduleResult scheduleResult = smartScheduleDailyPlan(dayStart,adHocEvents,
                     habitualEvents,forbiddenSlots );
 
             return Response.success(scheduleResult, "规划成功");
@@ -75,14 +77,14 @@ public class TimePlanController {
     //5.紧急事件冲突不管，依旧放入结果，日常事件没有时间段可以放入，则记录未完成放入的内容,放入redis做对应的补偿
     //6.紧急事件冲突不管，依旧放入结果，返回结果有对应的冲突事件集的事件id
     private ScheduleResult smartScheduleDailyPlan(
-            Instant date,
+            Instant dayStart,
             List<AdHocEventEntity> adHocEvents,
             List<HabitualEventEntity> habitualEvents,
             List<TimeRange> forbiddenSlots) { // 新增禁止时间段参数
 
         try {
             // 参数验证
-            validateInputParameters(date, adHocEvents, habitualEvents);
+            validateInputParameters(dayStart, adHocEvents, habitualEvents);
 
             List<PlannedTask> results = new ArrayList<>();
             List<Long> conflictIds = new ArrayList<>();
@@ -96,7 +98,7 @@ public class TimePlanController {
                     .thenComparing(SchedulerTask::getPriority));
 
             // 3. 当天时间段初始化
-            List<TimeSlot> timeSlots = initializeTimeSlots(date);
+            List<TimeSlot> timeSlots = initializeTimeSlots(dayStart);
 
             // 3.1 标记禁止时间段
             if (forbiddenSlots != null && !forbiddenSlots.isEmpty()) {
@@ -158,7 +160,7 @@ public class TimePlanController {
         BigDecimal remainingHours = task.getDurationHours();
         List<PlannedTask> taskParts = new ArrayList<>();
 
-        // 按时间段优先级排序：优先使用事件间的空闲   todo 这里是所有往前排
+        // 按时间段优先级排序：优先使用事件间的空闲   todo 这里是所有先用短的，在往前排
         List<TimeSlot> sortedSlots = timeSlots.stream()
                 .filter(slot -> !slot.isUsed())
                 .sorted(this::compareTimeSlots)
@@ -317,9 +319,7 @@ public class TimePlanController {
     /**
      * 初始化时间段
      */
-    private List<TimeSlot> initializeTimeSlots(Instant date) {
-        Instant dayStart = date.atZone(ZoneId.systemDefault()).toLocalDate()
-                .atStartOfDay(ZoneId.systemDefault()).toInstant();
+    private List<TimeSlot> initializeTimeSlots(Instant dayStart) {
         Instant dayEnd = dayStart.plus(Duration.ofHours(24));
 
         List<TimeSlot> timeSlots = new ArrayList<>();

@@ -66,7 +66,7 @@ public class HabitualEventServiceImpl implements IHabitualEventService {
      */
     @Override
     public void updateHabitualEvent(Long userId, HabitualEventUpdateDTO dto) {
-        HabitualEvent event = habitualEventRepository.findById(dto.getEventId());
+        HabitualEvent event = habitualEventRepository.findById(dto.getId());
         Assert.notNull(event, "事件不存在");
         Assert.isTrue(event.getUserId().equals(userId), "无权修改他人事件");
 

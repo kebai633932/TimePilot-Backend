@@ -15,7 +15,7 @@ public class HabitualEventUpdateDTO {
 
     /** 事件ID */
     @NotNull(message = "事件ID不能为空")
-    private Long eventId;
+    private Long id;
 
     /** 事件标题 */
     @NotBlank(message = "事件标题不能为空")
@@ -29,12 +29,12 @@ public class HabitualEventUpdateDTO {
     private Integer quadrant;
 
     /** 重复模式：daily、weekly、monthly、custom */
-    @NotBlank(message = "重复模式不能为空")
+//    @NotBlank(message = "重复模式不能为空")
     @Pattern(regexp = "daily|weekly|monthly|custom", message = "重复模式必须是 daily、weekly、monthly 或 custom 之一")
     private String repeatPattern;
 
     /** 重复间隔（如每2天、每3周） */
-    @NotNull(message = "重复间隔不能为空")
+//    @NotNull(message = "重复间隔不能为空")
     @Min(value = 1, message = "重复间隔必须大于等于1")
     private Integer repeatInterval;
 

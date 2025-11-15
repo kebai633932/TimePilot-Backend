@@ -14,4 +14,6 @@ import java.time.Instant;
 public class SmartDailyPlanGenerateDTO {
     @NotNull(message = "查询日期不能为空")
     private Instant date;
+    @NotNull(message = "客户端地区不能为空")
+    private String clientTimeZone;
 }

@@ -26,5 +26,6 @@ public interface IAdHocEventService {
 
     List<AdHocEventVO> listUserAdHocEvents(Long userId);
 
-    List<AdHocEventEntity> getTodayEvents(Long userId, @NotNull(message = "查询日期不能为空") Instant date);
+    List<AdHocEventEntity> getTodayEvents(Long userId, @NotNull(message = "查询日期不能为空") Instant date
+            ,@NotNull(message = "客户端地区不能为空") String clientTimeZone);
 }

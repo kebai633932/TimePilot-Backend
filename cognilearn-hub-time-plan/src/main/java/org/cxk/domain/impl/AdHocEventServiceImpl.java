@@ -8,6 +8,7 @@ import org.cxk.domain.IAdHocEventService;
 import org.cxk.domain.model.entity.AdHocEventEntity;
 import org.cxk.domain.repository.IAdHocEventRepository;
 import org.cxk.infrastructure.adapter.dao.po.AdHocEvent;
+import org.cxk.util.ClientDateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -134,9 +135,9 @@ public class AdHocEventServiceImpl implements IAdHocEventService {
 
 
     @Override
-    public List<AdHocEventEntity> getTodayEvents(Long userId, Instant date) {
+    public List<AdHocEventEntity> getTodayEvents(Long userId, Instant date,String clientTimeZone) {
         // 1️⃣ 计算当天起止时间
-        Instant startOfDay = date.truncatedTo(java.time.temporal.ChronoUnit.DAYS);
+        Instant startOfDay = ClientDateTimeUtils.getClientDayStart(date,clientTimeZone);
         Instant endOfDay = startOfDay.plus(java.time.Duration.ofDays(1));
 
         // 2️⃣ 查询当日事件（开始或结束时间在当天内）
