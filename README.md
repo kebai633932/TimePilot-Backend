@@ -22,7 +22,8 @@
 ⭐ 如果你喜欢这个项目，请点击右上角的 **Star** 支持我！  
 💬 你的反馈与建议对我非常重要，欢迎通过 Issue 或 Discussions 留言交流。  
 
+
 最新版本下载：  
-👉 [TimePilot-App Release v1.0.0](https://github.com/kebai633932/TimePilot-app/releases/tag/release-v1.0.0)
+👉 [TimePilot-App Release v1.0.0](https://github.com/kebai633932/TimePilot-app/releases)
 
 ---
